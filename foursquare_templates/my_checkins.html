@@ -1,0 +1,19 @@
+<h1> My 10 Checkins </h1>
+<table>
+{% for key,value in first10.items %}
+<tr>
+ <td> {{key}} </td>
+ <td> {{value}} </td>
+</tr>
+{% endfor %}
+</table>
+<table>
+<break>
+<h1> Friends </h1>
+{% for key,value in friends.items %}
+<tr>
+ <td> {{key}} </td>
+ <td> {{value}} </td>
+</tr>
+{% endfor %}
+</table>
