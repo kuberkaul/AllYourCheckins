@@ -21,8 +21,21 @@ def welcome(request):
 	client.set_access_token(accessToken)
 	all_checkins = client.users.checkins()
 
-	#  Printing 10 checkins of the user
+	#  Printing 10 checkins of the user between a given timeperiod.
 	first10={}
+	timeFilteredCheckins = {}
+	print client.users.checkins(params={'beforeTimestamp':'1350311510','sort':'oldestfirst','limit':'6'})
+	
+	for i in range(0, 6):
+		timeFilteredCheckins[i] = (client.users.checkins(params={'beforeTimestamp':'1350311510','afterTimestamp':'1318689110 ' ,'sort':'oldestfirst','limit':'6'})['checkins']['items'][i]['venue']['name'])
+
+	
+	print "The latest 6 checkins after 07/01/2011 and before 07/01/2012 are : \n"
+	for key,something in timeFilteredCheckins.iteritems():
+		print key,something
+	print '\n\n'
+	
+	#Printing 10 checkins of the user	
 	for i in range(1,10):
 		first10[i] = all_checkins['checkins']['items'][i]['venue']['name']
 	print 'The latest 10 Checkins of user are : '
@@ -34,7 +47,7 @@ def welcome(request):
 	friends = {}
 	print 'All friends of user are :'
 	for i,key in enumerate(client.users.friends()['friends']['items']):
-		friends[i] = key['lastName']
+		friends[i] = key['firstName']
 		print i,key['firstName'] 
 	print '\n\n\n\n\n\n'
 	
@@ -53,11 +66,13 @@ def welcome(request):
 
 	# Returns a list of recent checkins from friends.
 	friendsCheckinsDict =  client.checkins.recent(params={'id':'5134447'})
-	print friendsCheckinsDict	
+	#print friendsCheckinsDict	
 	friendsCheckins = {}
 	for i in range(1,10):
                friendsCheckins[i] = friendsCheckinsDict['recent'][i]['venue']['name']
         print 'The latest 10 Checkins of users friends are : '
         for key,value in friendsCheckins.iteritems():
                 print key,value
+
+
 	return render_to_response('my_checkins.html',{'first10':first10, 'friends':friends})
