@@ -1,7 +1,7 @@
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
-from django.template import RequestContext
+from django.template import RequestContext, loader, Context
 import foursquare
 
 # Authenticating the user here
@@ -76,3 +76,10 @@ def welcome(request):
 
 
 	return render_to_response('my_checkins.html',{'first10':first10, 'friends':friends})
+
+
+def mapView(request):
+    template = loader.get_template('mapTemplate.html')
+    context = Context()
+    return HttpResponse(template.render(context))
+

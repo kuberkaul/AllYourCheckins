@@ -112,6 +112,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     "/Users/kuberkaul/Desktop/AllYourCheckins/foursquare_templates",
+    "/home/andrew/Desktop/COMS4156/sharedProject/allyourcheckins/foursquare_templates",
 )
 
 INSTALLED_APPS = (
