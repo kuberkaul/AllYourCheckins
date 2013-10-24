@@ -83,3 +83,21 @@ def mapView(request):
     context = Context()
     return HttpResponse(template.render(context))
 
+def imageIndex(request):
+    # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
+    imageList = []
+    imageList.append({"src": "http://gadgetsteria.com/wp-content/uploads/2013/06/wpid-foursquare-time-top1.jpg", "title": "First Timeline"})
+    imageList.append({"src": "http://wac.450f.edgecastcdn.net/80450F/lite987.com/files/2013/06/foursquare-time-machine-all-places-map.jpg", "title": "Another Timeline"})
+    imageList.append({"src": "http://media.mediapost.com/dam/cropped/2013/06/13/san-francisco-map-b_2.jpg", "title": "Timeline 3"})
+    imageList.append({"src": "http://images.itechpost.com/data/images/full/6964/foursquare-time-machine.jpg", "title": "Fourth"})
+    imageList.append({"src": "http://monikarunstrom.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-13-at-9.20.57-AM.png", "title": ""})
+
+    template = loader.get_template('imageIndexTemplate.html')
+    context = Context({"imageList": imageList})
+    return HttpResponse(template.render(context))
+
+def friendIndex(request):
+    # TODO - I'd like to call a function here that returns all of the signed-in user's friends.
+    template = loader.get_template('friendIndexTemplate.html')
+    context = Context({"usernameList": ["Alex", "Jon", "Gail", "Samantha", "Madhav", "Lev", "Matt"]})
+    return HttpResponse(template.render(context))
