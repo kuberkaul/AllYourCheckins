@@ -133,7 +133,11 @@
             }
 
             function fetchData() {
-                window.alert("This needs to be implemented");
+            $.get('search/', function(data){alert("Reaching to Foursquare....")});
+            {
+            document.getElementById("something").submit();
+            }
+            window.alert("Parameters Submitted");
             }
         </script>
 
@@ -378,7 +382,7 @@
                 </div>
             </div>
         </div>
-
+        <form action = "search/" method = "get" id = "something" >
         <div id="main">
             <div id="leftControlWrapper" class="controlWrapper boxWrap">
                 <div id="controlHeading">Data</div>
@@ -396,15 +400,15 @@
 
                         <div class="mapInputWrapper">
                             Start Date:
-                            <input id="startDate" class="mapInput" type="date"> 
+                            <input id="startDate" class="mapInput" type="date" placeholder = "Enter in yyy/mm/dd format">
                         </div>
     
                         <div class="mapInputWrapper">
                             End Date:
-                            <input id="endDate" class="mapInput" type="date"> 
+                            <input id="endDate" class="mapInput" type="date" placeholder = "Enter in yyy/mm/dd format">
                         </div>
                 </div>
-                <div id="actionButton" onclick="fetchData();">Fetch Data</div>
+                <div input type-"submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div>
             </div>
 
             <div id="rightColumn" class="boxWrap">

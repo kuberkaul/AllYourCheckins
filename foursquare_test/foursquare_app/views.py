@@ -2,17 +2,17 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
 from django.template import RequestContext, loader, Context
-import foursquare
+import foursquare, datetime
 
 # Authenticating the user here
 def index(request):
-	global client
 	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
 	
 	auth_uri = client.oauth.auth_url()
 	return redirect(auth_uri)
 
 def mapView(request):
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
     code = request.GET.get('code','')
     # Using access token and creating client object
     accessToken = request.session.get('accessToken')
@@ -21,7 +21,7 @@ def mapView(request):
 	request.session['accessToken'] = accessToken
     client.set_access_token(accessToken)
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
-    print name
+    #print name
     
 
 
@@ -30,6 +30,7 @@ def mapView(request):
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
     # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -46,13 +47,14 @@ def imageIndex(request):
     return HttpResponse(template.render(context))
 
 def friendIndex(request):
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
     # TODO - I'd like to call a function here that returns all of the signed-in user's friends.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
 
     friends = []
-    print 'All friends of user are :'
-    print client.users.friends()
+    #print 'All friends of user are :'
+    #print client.users.friends()
     for i,key in enumerate(client.users.friends()['friends']['items']):
 	if 'photo' not in key:
 		photo = " "
@@ -74,3 +76,38 @@ def friendIndex(request):
     template = loader.get_template('friendIndexTemplate.html')
     context = Context({"usernameList": friends,"Name":name})
     return HttpResponse(template.render(context))
+
+def search(request):
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client.set_access_token(request.session.get('accessToken'))
+    name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+    print name
+    print "hello from search"
+    if 'username' in request.GET:
+        message = request.GET['username']
+    if 'query' in request.GET:
+        message1 = request.GET['query']
+    if 'startDate' in request.GET:
+        message2 = request.GET['startDate']
+        message2 = message2.split('/')
+   	print message2
+    if 'endDate' in request.GET:
+	message3 = request.GET['endDate']
+	message3 = message3.split('/')
+    print client.users.friends()
+    print message2
+    print "after message2"
+    # Time format yyyy/mm/dd/h/s --> epoch conversion
+    startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    
+    count = 10
+    for i in range(0, count):
+        timeFilteredCheckins[i] = (client.users.checkins(params={'beforeTimestamp':startDate,'afterTimestamp':finalDate ,'sort':'oldestfirst','limit':'100'})['checkins']['items'][i]['venue']['name'])
+        print "The time filtered checkins are : \n"
+        for key,something in timeFilteredCheckins.iteritems():
+            print key,something
+        print '\n\n'
+
+    return HttpResponse("hello")
+
