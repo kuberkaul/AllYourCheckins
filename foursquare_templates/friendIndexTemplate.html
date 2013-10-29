@@ -14,15 +14,20 @@
                     window.alert("You must select a user"); 
                 } else {
                     // TODO - Pass the username 
-                    window.location = "{% url mapView %}";
+                    window.location = "{% url "mapView" %}";
                 }
             }
 
             function selectUser(userElement) {
                 // TODO - Perform proper error handling and have this enable goToTimelineButton
                 document.getElementById("controlHeading").innerHTML = userElement.innerHTML;
-                document.getElementById("friendData").innerHTML = "This will be populated with some relevant data like name, image, and # of check-ins for " + userElement.innerHTML;
+
+		document.getElementById("dp").src=document.getElementById("dpprefix").innerHTML + '110x110' + document.getElementById("dpsuffix").innerHTML;
+		document.getElementById("friendData").innerHTML = "<br>" + document.getElementById("firstName").innerHTML + " " + document.getElementById("lastName").innerHTML + "<br>" + document.getElementById("photo").innerHTML + document.getElementById("homeCity").innerHTML;
+
             }
+	
+	    
         </script>
 
         <style type="text/css">
@@ -236,9 +241,9 @@
             <div id="mainNav">
                 <div id="mainNavInner">
                     <ul>
-                        <li class="mainNavItem"><a href="{% url mapView %}">Create</a></li>
-                        <li class="mainNavItem active"><a href="{% url friendIndex %}">Connect</a></li>
-                        <li class="mainNavItem"><a href="{% url imageIndex %}">Revisit</a></li>
+                        <li class="mainNavItem"><a href="{% url "mapView" %}">Create</a></li>
+                        <li class="mainNavItem active"><a href="{% url "friendIndex" %}">Connect</a></li>
+                        <li class="mainNavItem"><a href="{% url "imageIndex" %}">Revisit</a></li>
                     </ul>
                 </div>
             </div>
@@ -254,8 +259,17 @@
 
             <div id="friendIndexWrapper" class="boxWrap">
                 {% for username in usernameList %}
-                    <div class="friendIndexItem boxWrap" onclick="selectUser(this);">{{username}}</div>
-                {% endfor %}
+			
+                        <div class="friendIndexItem boxWrap" onclick="selectUser(this);">
+				 <div id="firstName" class="mapInputWrapper"> {{username.0}}</div>
+				<div id="lastName" class="mapInputWrapper"> {{username.1}}</div>
+				<div id="dpprefix">{{ username.2.prefix }}</div>
+				<div id="dpsuffix">{{ username.2.suffix }}</div>
+				<div id="homeCity" class="mapInputWrapper"><p><img id="dp" height ="110" width="110"></p></div>
+				<div id="photo" > {{username.3}}</div>
+			
+			{{username}}</div>
+		{% endfor %}
             </div>
         </div>
     </body>
