@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
 from django.template import RequestContext, loader, Context
 import foursquare, datetime
+from django.contrib.auth import logout
+
 #from sets import set
 import mimetypes
 from django.shortcuts import render_to_response
@@ -13,14 +15,21 @@ from boto.s3.key import Key
 
 # Authenticating the user here
 def index(request):
-	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+	try:
+		del request.session['accessToken']
+	except KeyError:
+		pass
+	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
 	
 	auth_uri = client.oauth.auth_url()
 	return redirect(auth_uri)
 
 def mapView(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     code = request.GET.get('code','')
+    friendid = request.GET.get('userid','')
+    friendname = request.GET.get('firstName','')
+    print "friend id is:"+friendid+" friend name is:"+friendname
     # Using access token and creating client object
     accessToken = request.session.get('accessToken')
     if not accessToken:
@@ -28,16 +37,21 @@ def mapView(request):
 	request.session['accessToken'] = accessToken
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
-    name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+    if friendid:
+        name = friendname
+        id = friendid
+    else:
+        name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+        id = '' 
     #print name
 
 
     template = loader.get_template('mapTemplate.html')
-    context = Context({"Name":name})
+    context = Context({"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -54,14 +68,14 @@ def imageIndex(request):
     return HttpResponse(template.render(context))
 
 def friendIndex(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     # TODO - I'd like to call a function here that returns all of the signed-in user's friends.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
 
     friends = []
     #print 'All friends of user are :'
-    #print client.users.friends()
+    print client.users.friends()
     for i,key in enumerate(client.users.friends()['friends']['items']):
 	if 'photo' not in key:
 		photo = " "
@@ -77,7 +91,7 @@ def friendIndex(request):
 		lastName = " "
 	else:
 		lastName = key['lastName']
-        friends.append([key['firstName'],lastName,photo,homeCity])
+        friends.append([key['id'],key['firstName'],lastName,photo,homeCity])
         #print i,key['firstName'] 
 
     template = loader.get_template('friendIndexTemplate.html')
@@ -85,8 +99,7 @@ def friendIndex(request):
     return HttpResponse(template.render(context))
 
 def search(request):
-    print "hello world"
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     timeFilteredCheckinsBefore = {}
@@ -98,14 +111,30 @@ def search(request):
     timeFilteredCheckinsBefore.clear()
     timeFilteredCheckinsAfter.clear()
 
+
+    if 'username' in request.GET:
+        message = request.GET['username']
+	print message
+    if 'userid' in request.GET:
+ 	userid = request.GET['userid']
+	print "userid is:"+userid
+    #userid = "'" + str(userid) + "'"
+        print userid
+    	print "starting now"
+        print client.checkins.recent(params={'limit':'100'})
+    else:
+	print "hi"
+    	#print client.users.checkins()
+    if 'query' in request.GET:
+        message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
-	print message2
+#   print message2
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
-	print message3
+#print message3
 
     if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -118,18 +147,29 @@ def search(request):
     elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
-	for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
-        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        	venueNamesAfter.append(key['venue']['name'])
+	if 'userid' in request.GET:
+		total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})['recent']
+	else:
+		total_checkins = client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']
+	for i,key in enumerate(total_checkins):
+		if 'venue' in key:
+        		timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		venueNamesAfter.append(key['venue']['name'])
 	return HttpResponse(venueNamesAfter)
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
-	for i,key in enumerate(client.users.checkins()['checkins']['items']):
-	        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        	venueNamesAfter.append(key['venue']['name'])
+	if 'userid' in request.GET:
+		total_checkins = client.checkins.recent(params={'id':userid})['recent']
+	else:
+		total_checkins = client.users.checkins()['checkins']['items']
+
+	for i,key in enumerate(total_checkins):
+		if 'venue' in key:
+	        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		venueNamesAfter.append(key['venue']['name'])
 	return HttpResponse(venueNamesAfter)
-    startDate = (datetime.datetime(int(message2[2]),int(message2[1]),int(message2[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    finalDate = (datetime.datetime(int(message3[2]),int(message3[1]),int(message3[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     startDate = int(startDate)
     finalDate = int(finalDate)
 
@@ -138,7 +178,12 @@ def search(request):
         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         venueNamesBefore.append(key['venue']['name'])
 
-    for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
+
+    if 'userid' in request.GET:
+	total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})
+    else:
+	total_checkins = client.users.checkins(params={'afterTimestamp':startDate})
+    for i,key in enumerate(total_checkins['checkins']['items']):
         timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         venueNamesAfter.append(key['venue']['name'])
 
@@ -148,23 +193,26 @@ def search(request):
                 commonSet.append(before)
     intersectionNames = set(commonSet)
     for something in intersectionNames:
-	if something in timeFilteredCheckinsBefore.keys():
-		print something , timeFilteredCheckinsBefore[something]
+        if something in timeFilteredCheckinsBefore.keys():
+        	print something , timeFilteredCheckinsBefore[something]
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 	else:
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 		print something, timeFilteredCheckinsAfter[something]
     for i in putToMap:
 	print i ,putToMap[i]
-    print putToMap   
+    print putToMap
     return HttpResponse(putToMap)
 
 
 def login(request):
+    if request.session['accessToken']:
+        del request.session['accessToken']
     template = loader.get_template('login.html')
     context = Context()
     return HttpResponse(template.render(context))
-
+def logoutuser(request):
+    return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
 def loginError(request):
     template = loader.get_template('login.html')
     context = Context({"errorMessage": "The username or password you entered is incorrect"})

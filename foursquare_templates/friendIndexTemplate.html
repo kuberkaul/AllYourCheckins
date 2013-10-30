@@ -9,12 +9,14 @@
             function goToTimeline() {
 
                 // TODO - Perform proper error handling and have goToTimelineButton disabled by default to avoid this check
-                var username = document.getElementById("controlHeading").innerHTML;
+                var userid = document.getElementById("id").innerHTML;
+		var username = document.getElementById("controlHeading").innerHTML;
+                var firstName = document.getElementById("firstName").innerHTML;
                 if("select a user" === username) {
                     window.alert("You must select a user"); 
                 } else {
                     // TODO - Pass the username 
-                    window.location = "{% url "mapView" %}";
+                    window.location = "/foursquare_app/mapView?userid="+userid+"&firstName="+firstName;
                 }
             }
 
@@ -23,7 +25,7 @@
                 document.getElementById("controlHeading").innerHTML = userElement.innerHTML;
 
 		document.getElementById("dp").src=document.getElementById("dpprefix").innerHTML + '110x110' + document.getElementById("dpsuffix").innerHTML;
-		document.getElementById("friendData").innerHTML = "<br>" + document.getElementById("firstName").innerHTML + " " + document.getElementById("lastName").innerHTML + "<br>" + document.getElementById("photo").innerHTML + document.getElementById("homeCity").innerHTML;
+		document.getElementById("friendData").innerHTML = document.getElementById("id").innerHTML + "<br>" + document.getElementById("firstName").innerHTML + " " + document.getElementById("lastName").innerHTML + "<br>" + document.getElementById("photo").innerHTML + document.getElementById("homeCity").innerHTML;
 
             }
 	
@@ -235,7 +237,7 @@
             <div id="upperHeader">
                 <div id="logoutWrapper">
 		    <a href="#">{{Name}} | </a>
-                    <a href="#">Logout</a>
+	            <a href="{%url "logout" %}">Logout</a>
                 </div>
             </div>
 
@@ -262,14 +264,15 @@
                 {% for username in usernameList %}
 			
                         <div class="friendIndexItem boxWrap" onclick="selectUser(this);">
-				 <div id="firstName" class="mapInputWrapper"> {{username.0}}</div>
-				<div id="lastName" class="mapInputWrapper"> {{username.1}}</div>
-				<div id="dpprefix">{{ username.2.prefix }}</div>
-				<div id="dpsuffix">{{ username.2.suffix }}</div>
+				<div id="firstName" class="mapInputWrapper">{{username.1}}</div>
+				<div id="lastName" class="mapInputWrapper">{{username.2}}</div>
+				<div id="id" class="mapInputWrapper">{{username.0}}</div>
+				<div id="dpprefix">{{ username.3.prefix }}</div>
+				<div id="dpsuffix">{{ username.3.suffix }}</div>
 				<div id="homeCity" class="mapInputWrapper"><p><img id="dp" height ="110" width="110"></p></div>
-				<div id="photo" > {{username.3}}</div>
+				<div id="photo" >{{username.4}}</div>
 			
-			{{username}}</div>
+			{{ username.1 }}</div>
                 {% endfor %}
             </div>
         </div>

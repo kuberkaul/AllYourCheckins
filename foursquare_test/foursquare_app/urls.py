@@ -8,6 +8,7 @@ urlpatterns = patterns('', url(r'^$', views.index, name = 'index'),
                        url(r'^imageIndex', views.imageIndex, name = 'imageIndex'),
                        url(r'^friendIndex/', views.friendIndex, name = 'friendIndex'),
                        url(r'^loginError', views.loginError, name = 'loginError'),
-                       url(r'^login', views.login, name = 'login')
+                       url(r'^login', views.login, name = 'login'),
+		       url(r'^logout',views.logoutuser, name='logout'),
                       )
                    
