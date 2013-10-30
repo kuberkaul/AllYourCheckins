@@ -33,13 +33,15 @@ def mapView(request):
     client.set_access_token(request.session.get('accessToken'))
     if friendid:
         name = friendname
+        id = friendid
     else:
         name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+        id = '' 
     #print name
 
 
     template = loader.get_template('mapTemplate.html')
-    context = Context({"Name":name})
+    context = Context({"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
@@ -91,7 +93,6 @@ def friendIndex(request):
     return HttpResponse(template.render(context))
 
 def search(request):
-    print "hello world"
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -104,8 +105,15 @@ def search(request):
     timeFilteredCheckinsBefore.clear()
     timeFilteredCheckinsAfter.clear()
 
-    if 'user' in request.GET:
-        message = request.GET['user']
+    if 'username' in request.GET:
+        message = request.GET['username']
+	print message
+    if 'userid' in request.GET:
+ 	userid = request.GET['userid']
+	print "userid is:"+userid
+	print client.checkins.recent(params={'id':userid})
+    else:
+	print client.users.checkins()
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
@@ -128,15 +136,26 @@ def search(request):
     elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
-	for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
-        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        	venueNamesAfter.append(key['venue']['name'])
+	if 'userid' in request.GET:
+		total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})['recent']
+	else:
+		total_checkins = client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']
+	for i,key in enumerate(total_checkins):
+		if 'venue' in key:
+        		timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		venueNamesAfter.append(key['venue']['name'])
 	return HttpResponse(venueNamesAfter)
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
-	for i,key in enumerate(client.users.checkins()['checkins']['items']):
-	        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        	venueNamesAfter.append(key['venue']['name'])
+	if 'userid' in request.GET:
+		total_checkins = client.checkins.recent(params={'id':userid})['recent']
+	else:
+		total_checkins = client.users.checkins()['checkins']['items']
+
+	for i,key in enumerate(total_checkins):
+		if 'venue' in key:
+	        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		venueNamesAfter.append(key['venue']['name'])
 	return HttpResponse(venueNamesAfter)
     startDate = (datetime.datetime(int(message2[2]),int(message2[1]),int(message2[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     finalDate = (datetime.datetime(int(message3[2]),int(message3[1]),int(message3[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -148,7 +167,12 @@ def search(request):
         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         venueNamesBefore.append(key['venue']['name'])
 
-    for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
+
+    if 'userid' in request.GET:
+	total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})
+    else:
+	total_checkins = client.users.checkins(params={'afterTimestamp':startDate})
+    for i,key in enumerate(total_checkins['checkins']['items']):
         timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         venueNamesAfter.append(key['venue']['name'])
 

@@ -513,9 +513,11 @@
                 <div id="controls">
                         <div class="mapInputWrapper">
                             Username:
-                            <input readonly id="startDate" name="username" value="{{Name}}" class="mapInput" type="text">
+                            <input readonly id="user" name="username" value="{{Name}}" class="mapInput" type="text">
                         </div>
- 
+			    {% if Id %}
+			    <input id="userid" name="userid" value="{{Id}}" type="hidden"> 
+				{% endif %}
                         <div class="mapInputWrapper">
                             Start Date:
                             <input id="startDate" name="startDate"class="mapInput" type="date" placeholder = "Enter in mm-dd-yyyy format">
