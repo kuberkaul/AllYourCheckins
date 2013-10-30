@@ -6,13 +6,13 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <title>AllYourCheckIns</title>
         <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css">
-        <link rel="stylesheet" href="http://openlayers.org/dev/examples/style.css" type="text/css">
+        <link rel="stylesheet" href="http://openlayers.org/dev/examples/style.css" type="text/css">        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
         <script src="http://openlayers.org/api/OpenLayers.js"></script>
         <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
         <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /> -->
         <link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet' type='text/css'>
-        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
         <script type="text/javascript">
 
 
@@ -134,10 +134,10 @@
 
             function fetchData() {
             $.get('search/', function(data){alert("Reaching to Foursquare....")});
-            {
-            document.getElementById("something").submit();
-            }
-            window.alert("Parameters Submitted");
+            //{
+            //document.getElementById("something").submit();
+            //}
+            //window.alert("Parameters Submitted");
             }
         </script>
 
@@ -382,7 +382,7 @@
                 </div>
             </div>
         </div>
-        <form action = "search/" method = "get" id = "something" >
+        <form action = "search/" method = "get">
         <div id="main">
             <div id="leftControlWrapper" class="controlWrapper boxWrap">
                 <div id="controlHeading">Data</div>
@@ -390,25 +390,26 @@
                 <div id="controls">
                         <div class="mapInputWrapper">
                             User:
-                            <input id="usernameSelection" class="mapInput" type="text" placeholder="Enter a Foursquare username...">
+                            <input id="usernameSelection" name="user" class="mapInput" type="text" placeholder="Enter a Foursquare username...">
                         </div>
 
                         <div class="mapInputWrapper">
                             Query:
-                            <input id="queryFilter" class="mapInput" type="text" placeholder="Enter a query to filter check-ins by...">
+                            <input id="queryFilter" name="query" class="mapInput" type="text" placeholder="Enter a query to filter check-ins by...">
                         </div>
 
                         <div class="mapInputWrapper">
                             Start Date:
-                            <input id="startDate" class="mapInput" type="date" placeholder = "Enter in yyy/mm/dd format">
+                            <input id="startDate" name="startDate"class="mapInput" type="date" placeholder = "Enter in yyyy/mm/dd format">
                         </div>
     
                         <div class="mapInputWrapper">
                             End Date:
-                            <input id="endDate" class="mapInput" type="date" placeholder = "Enter in yyy/mm/dd format">
+                            <input id="endDate" name="endDate" class="mapInput" type="date" placeholder = "Enter in yyyy/mm/dd format">
                         </div>
                 </div>
-                <div input type-"submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div>
+                <input type = "submit" value = "Search">
+                <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div>
             </div>
 
             <div id="rightColumn" class="boxWrap">
