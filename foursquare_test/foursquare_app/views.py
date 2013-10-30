@@ -13,13 +13,13 @@ def index(request):
 		del request.session['accessToken']
 	except KeyError:
 		pass
-	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
 	
 	auth_uri = client.oauth.auth_url()
 	return redirect(auth_uri)
 
 def mapView(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     code = request.GET.get('code','')
     # Using access token and creating client object
     accessToken = request.session.get('accessToken')
@@ -37,7 +37,7 @@ def mapView(request):
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -54,7 +54,7 @@ def imageIndex(request):
     return HttpResponse(template.render(context))
 
 def friendIndex(request):
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     # TODO - I'd like to call a function here that returns all of the signed-in user's friends.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -86,7 +86,7 @@ def friendIndex(request):
 
 def search(request):
     print "hello world"
-    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
+    client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     timeFilteredCheckinsBefore = {}
@@ -171,7 +171,7 @@ def login(request):
     context = Context()
     return HttpResponse(template.render(context))
 def logoutuser(request):
-    return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView/")
+    return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
 def loginError(request):
     template = loader.get_template('login.html')
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
