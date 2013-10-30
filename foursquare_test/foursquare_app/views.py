@@ -13,6 +13,7 @@ def index(request):
 	return redirect(auth_uri)
 
 def mapView(request):
+    '''
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
     code = request.GET.get('code','')
     # Using access token and creating client object
@@ -24,7 +25,8 @@ def mapView(request):
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     #print name
-    
+    '''
+    name = "andrew" 
 
 
     template = loader.get_template('mapTemplate.html')
@@ -133,4 +135,15 @@ def search(request):
 	print i ,putToMap[i]
     print putToMap   
     return HttpResponse(putToMap)
+
+
+def login(request):
+    template = loader.get_template('login.html')
+    context = Context()
+    return HttpResponse(template.render(context))
+
+def loginError(request):
+    template = loader.get_template('login.html')
+    context = Context({"errorMessage": "The username or password you entered is incorrect"})
+    return HttpResponse(template.render(context))
 
