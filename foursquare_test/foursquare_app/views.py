@@ -3,10 +3,16 @@ from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
 from django.template import RequestContext, loader, Context
 import foursquare, datetime
+from django.contrib.auth import logout
+
 #from sets import set
 
 # Authenticating the user here
 def index(request):
+	try:
+		del request.session['accessToken']
+	except KeyError:
+		pass
 	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
 	
 	auth_uri = client.oauth.auth_url()
@@ -159,10 +165,13 @@ def search(request):
 
 
 def login(request):
+    if request.session['accessToken']:
+        del request.session['accessToken']
     template = loader.get_template('login.html')
     context = Context()
     return HttpResponse(template.render(context))
-
+def logoutuser(request):
+    return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView/")
 def loginError(request):
     template = loader.get_template('login.html')
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
