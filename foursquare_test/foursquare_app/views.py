@@ -114,78 +114,80 @@ def search(request):
 
     if 'username' in request.GET:
         message = request.GET['username']
-	print message
     if 'userid' in request.GET:
  	userid = request.GET['userid']
 	print "userid is:"+userid
-    #userid = "'" + str(userid) + "'"
-        print userid
-    	print "starting now"
-        print client.checkins.recent(params={'limit':'100'})
-    else:
-	print "hi"
-    	#print client.users.checkins()
+       # print client.checkins.recent(params={'limit':'100'})
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
-#   print message2
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
-#print message3
 
     if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
         finalDate = int(finalDate)
-        for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
-        	timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        	venueNamesBefore.append(key['venue']['name'])
-        return HttpResponse(venueNamesBefore)
+     	if 'userid' in request.GET:
+	   	for i,key in enumerate(client.checkins.recent()['recent']):  
+			if client.checkins.recent()['recent'][i]['user']['id']  == userid:			      			      	    timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+	 		else:
+				pass
+	else:
+		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
+     			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        return HttpResponse(timeFilteredCheckinsBefore)
 
     elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
 	if 'userid' in request.GET:
-		total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})['recent']
+		for i,key in enumerate(client.checkins.recent(params={'afterTimestamp':startDate})['recent']):	
+			print client.checkins.recent(params={'afterTimestamp':startDate})
+			if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:                         
+                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']	
+			else:
+				pass	
 	else:
-		total_checkins = client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']
-	for i,key in enumerate(total_checkins):
-		if 'venue' in key:
-        		timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        		venueNamesAfter.append(key['venue']['name'])
-	return HttpResponse(venueNamesAfter)
+		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
+        		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+	return HttpResponse(timeFilteredCheckinsBefore)
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
 	if 'userid' in request.GET:
-		total_checkins = client.checkins.recent(params={'id':userid})['recent']
+		for i,key in enumerate(client.checkins.recent()['recent']):
+                        if client.checkins.recent()['recent'][i]['user']['id']  == userid:
+                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
 	else:
-		total_checkins = client.users.checkins()['checkins']['items']
-
-	for i,key in enumerate(total_checkins):
-		if 'venue' in key:
-	        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        		venueNamesAfter.append(key['venue']['name'])
-	return HttpResponse(venueNamesAfter)
-    startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    startDate = int(startDate)
-    finalDate = int(finalDate)
-
-    for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
-	
-        timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        venueNamesBefore.append(key['venue']['name'])
-
-
-    if 'userid' in request.GET:
-	total_checkins = client.checkins.recent(params={'id':userid,'afterTimestamp':startDate})
+		for i,key in enumerate(client.users.checkins()['checkins']['items']):
+                        timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        return HttpResponse(timeFilteredCheckinsBefore)
+ 
     else:
-	total_checkins = client.users.checkins(params={'afterTimestamp':startDate})
-    for i,key in enumerate(total_checkins['checkins']['items']):
-        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-        venueNamesAfter.append(key['venue']['name'])
+	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+        startDate = int(startDate)
+        if 'userid' in request.GET:
+                for i,key in enumerate(client.checkins.recent(params={'afterTimestamp':startDate})['recent']):
+                        if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
+                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+		return HttpResponse(timeFilteredCheckinsBefore)
+	else:
+    		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    		finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    		startDate = int(startDate)
+    		finalDate = int(finalDate)
+
+    		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
+			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		venueNamesBefore.append(key['venue']['name'])
+
+		
+                for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
+                        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+                        venueNamesAfter.append(key['venue']['name'])
+
 
     for before in venueNamesBefore:
 	for after in venueNamesAfter:
