@@ -80,34 +80,58 @@ def friendIndex(request):
     return HttpResponse(template.render(context))
 
 def search(request):
-    print "Entered search"
+    print "hello world"
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView/')
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
-   
+    timeFilteredCheckinsBefore = {}
+    timeFilteredCheckinsAfter = {}
+    venueNamesBefore = []
+    venueNamesAfter = []
+    commonSet = []
+    putToMap = dict() 
+    timeFilteredCheckinsBefore.clear()
+    timeFilteredCheckinsAfter.clear()
+
     if 'user' in request.GET:
         message = request.GET['user']
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
-        message2 = message2.split('/')
+        message2 = message2.split('-')
+	print message2
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
-	message3 = message3.split('/')
+	message3 = message3.split('-')
+	print message3
 
-    startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
+        finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+        finalDate = int(finalDate)
+        for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
+        	timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        	venueNamesBefore.append(key['venue']['name'])
+        return HttpResponse(venueNamesBefore)
+
+    elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
+	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+	startDate = int(startDate)
+	for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
+        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        	venueNamesAfter.append(key['venue']['name'])
+	return HttpResponse(venueNamesAfter)
+    
+    elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
+	for i,key in enumerate(client.users.checkins()['checkins']['items']):
+	        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        	venueNamesAfter.append(key['venue']['name'])
+	return HttpResponse(venueNamesAfter)
+    startDate = (datetime.datetime(int(message2[2]),int(message2[1]),int(message2[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    finalDate = (datetime.datetime(int(message3[2]),int(message3[1]),int(message3[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     startDate = int(startDate)
     finalDate = int(finalDate)
-    timeFilteredCheckinsBefore = {}
-    timeFilteredCheckinsAfter = {}
-    venueNamesBefore = []
-    venueNamesAfter = []
-    commonSet = []
-    putToMap = dict()
-    timeFilteredCheckinsBefore.clear()
-    timeFilteredCheckinsAfter.clear()
+
     for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
 	
         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
