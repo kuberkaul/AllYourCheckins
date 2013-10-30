@@ -10,8 +10,10 @@ import mimetypes
 from django.shortcuts import render_to_response
 from django import forms
 from django.conf import settings
+"""
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+"""
 
 # Authenticating the user here
 def index(request):
@@ -110,6 +112,8 @@ def search(request):
     putToMap = dict() 
     timeFilteredCheckinsBefore.clear()
     timeFilteredCheckinsAfter.clear()
+    template = loader.get_template('mapTemplate.html')
+
 
 
     if 'username' in request.GET:
@@ -142,7 +146,8 @@ def search(request):
         for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
         	timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         	venueNamesBefore.append(key['venue']['name'])
-        return HttpResponse(venueNamesBefore)
+    	context = Context({"mapCheckins": venueNamesBefore})
+    	return HttpResponse(template.render(context))
 
     elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -155,7 +160,8 @@ def search(request):
 		if 'venue' in key:
         		timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         		venueNamesAfter.append(key['venue']['name'])
-	return HttpResponse(venueNamesAfter)
+    	context = Context({"mapCheckins": venueNamesAfter})
+    	return HttpResponse(template.render(context))
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
 	if 'userid' in request.GET:
@@ -167,7 +173,10 @@ def search(request):
 		if 'venue' in key:
 	        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         		venueNamesAfter.append(key['venue']['name'])
-	return HttpResponse(venueNamesAfter)
+	print timeFilteredCheckinsAfter 
+    	context = Context({"mapCheckins": timeFilteredCheckinsAfter})
+    	return HttpResponse(template.render(context))
+
     startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     startDate = int(startDate)
@@ -202,7 +211,8 @@ def search(request):
     for i in putToMap:
 	print i ,putToMap[i]
     print putToMap
-    return HttpResponse(putToMap)
+    context = Context({"mapCheckins": putToMap})
+    return HttpResponse(template.render(context))
 
 
 def login(request):
@@ -218,6 +228,7 @@ def loginError(request):
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
     return HttpResponse(template.render(context))
 
+"""
 def save(request):
 	def store_in_s3(filename, content):
         	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
@@ -243,3 +254,4 @@ def save(request):
     	p.save()
     	photos = PhotoUrl.objects.all().order_by("-uploaded")
  	return render_to_response("imageIndex.html", { "photos":photos})
+"""
