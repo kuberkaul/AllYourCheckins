@@ -30,20 +30,60 @@
         <script type="text/javascript">
             //document.onload = function() {
             function init() {
-                // TODO - Make this map non-global again
-                map = new ol.Map({
-                  layers: [
-                    new ol.layer.Tile({
-                      source: new ol.source.OSM()
+
+                var styles = ['Road', 'Aerial', 'AerialWithLabels'];
+                var layers = [];
+                for (var i = 0; i < styles.length; ++i) {
+                  layers.push(new ol.layer.Tile({
+                    visible: false,
+                    preload: Infinity,
+                    source: new ol.source.BingMaps({
+                      key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
+                      style: styles[i]
                     })
-                  ],
+                  }));
+                }
+            
+                styles.push('Watercolor');
+                layers.push(new ol.layer.Tile({
+                    visible: false,
+                    style: 'Watercolor',
+                    source: new ol.source.Stamen({
+                        layer: 'watercolor'
+                    })
+                }));
+
+                styles.push('Watercolor');
+                layers.push(new ol.layer.Tile({
+                    visible: false,
+                    style: 'Terrain',
+                    source: new ol.source.Stamen({
+                        layer: 'terrain-labels'
+                    })
+                }));
+
+
+                map = new ol.Map({
+                  layers: layers,
+                  //renderers: ol.RendererHints.createFromQueryData(),
+
                   renderer: ol.RendererHint.CANVAS,
                   target: 'map',
                   view: new ol.View2D({
-                    center: [0, 0],
-                    zoom: 2
+                    //center: ol.proj.transform([-123.1, 49.25], 'EPSG:4326', 'EPSG:3857'),
+                    center: ol.proj.transform([-73.976955, 40.768537], 'EPSG:4326', 'EPSG:3857'),
+                    zoom:14 
                   })
                 });
+
+                $('#layer-select').change(function() {
+                  var style = $(this).find(':selected').val();
+                  for (var i = 0; i < layers.length; ++i) {
+                    layers[i].setVisible(styles[i] == style);
+                  }
+                });
+                $('#layer-select').trigger('change');
+
 
 
                 // FIXME - This is only kept around so I can quickly download the png image to make sure it's correct
@@ -536,6 +576,12 @@
                 <!-- <div id="mapWrapper"></div> -->
                 <div id="map"></div>
                 <a id="export-png" class="btn" download="map.png"><i class="icon-download"></i> Export PNG</a>
+                <select id="layer-select">
+                    <option value="Aerial">Aerial</option>
+                    <option value="AerialWithLabels" selected>Aerial with labels</option>
+                    <option value="Road">Road</option>
+                    <option value="Watercolor">Watercolor</option>
+                </select>
             </div>
 
             <div id="rightControlWrapper" class="controlWrapper boxWrap">
