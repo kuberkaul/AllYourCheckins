@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>AllYourCheckIns</title>
+
+        <script type="text/javascript">
+            function login() {
+                window.alert("This needs to be implemented.  A valid login should go to mapView while an invalid one should go to loginError.");
+            }
+
+
+            /*
+            function signUp() {
+                window.alert("This needs to be implemented");
+            }
+            */
+        </script>
+
+
+        <link href="http://fonts.googleapis.com/css?family=Lobster" rel="stylesheet" type="text/css">
+        <link href="http://fonts.googleapis.com/css?family=Cabin" rel="stylesheet" type="text/css">
+        <style type="text/css">
+
+            body {
+                background: #efece6;
+                margin: 0px;
+                color: #3b3b3b;
+            }
+
+            .olControlLayerSwitcher .layersDiv, div.olControlZoom a {
+                background-color: #77216F !important;
+                opacity: .7;
+            }
+
+            .controlDivider { 
+                margin-left: 10%;  
+                margin-right: 10%;  
+                border-color: #77216F;
+                opacity: .7;
+            }
+
+
+            #main {
+                margin-top: 8px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #upperHeader {
+                height: 44px;
+                margin: 0 auto;
+                line-height: 44px;
+            }
+
+            #mainNav {
+                background: white;
+                border-top: 1px solid #b0b0b0;
+                border-bottom: 1px solid #b0b0b0;
+                box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+                height: 44px;
+                line-height: 44px;
+                min-width: 960px;
+            }
+
+            #mainNav ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            #mainNavInner {
+                margin: 0 auto;
+                width: 480px;
+            }
+
+            .mainNavItem {
+                display: inline;
+                width: 150px;
+                float: left;
+                text-align: center;
+            }
+
+            .mainNavItem a {
+                font-size: 24px;
+                color: grey;
+            }
+
+            .mainNavItem.active a {
+                color: #77216F;
+            }
+
+            #logoutWrapper {
+                width: 190px;
+                text-align: center;
+                float: right;
+            }
+            
+            #logoutWrapper a {
+                font-size: 18px;
+                color: grey;
+            }
+
+            #logoutWrapper a:hover {
+                color: #77216F;
+            }
+
+            a {
+                text-decoration: none;
+                //color: #3b3b3b;
+                color: grey;
+                font-family: 'Lobster', Georgia, Times, serif;
+            }
+
+            a:hover {
+                color: #77216F;
+            }
+
+            .controlWrapper {
+                width: 270px;
+                height: 512px; 
+                background-color: white;
+                float: left;
+            }
+
+            #controlHeading { 
+                color: grey;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 24px;
+                text-align: center;
+                height: 30px;
+                margin-top: 4px;
+                width: 100%;
+            }
+
+            #rightColumn {
+                width: 750px;
+                height: 512px;
+                float: left;
+            }
+
+            #actionButton {
+                color: white;
+                height: 50px;
+                width: 100%;
+                background-color: #77216F;
+                position: absolute;
+                bottom: 0;
+                border-radius: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                border-bottom-left-radius: 4px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 20px;
+                text-align: center;
+                line-height: 50px;
+            }
+
+            #actionButton:hover {
+                background-color: grey;
+                color: #77216F;
+            }
+
+            /* TODO - Might want to combine these into a single class */
+            #leftControlWrapper, #rightControlWrapper {
+                position: relative;
+            }
+
+            #mapWrapper {
+                width: 100%;
+                height: 100%;
+                background-image: url('http://techstyles.com.au/wp-content/uploads/2013/06/Foursquare-Time-Machine-map1.jpg');
+                background-size: cover;
+            }
+
+            .boxWrap {
+                border-radius: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                border-bottom-left-radius: 4px;
+                border: 1px solid #b0b0b0;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                background: white;
+                margin: 4px;
+            }
+
+            #map {
+                height: 100%;
+                width: 100%;
+            }
+
+            .mapInputWrapper {
+                margin-top: 25px;
+                margin-left: 20px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 14px;
+                color: #77216F;
+            }
+
+            .mapInput {
+                width: 210px;
+                height: 35px;
+                background: #EFECE6;
+                color: white
+                font-size: 22px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                border: 0;
+                padding: 0px 10px;
+                font-family: 'Cabin', Georgia, Times, serif;
+            }
+
+            .mapInput:focus, .ui-state-focus {
+                box-shadow: 0 0 15px rgba(119, 33, 111, 1);
+                -webkit-box-shadow: 0 0 15px rgba(119, 33, 111, 1)
+                -moz-box-shadow: 0 0 15px rgba(119, 33, 111, 1);
+                border:1px solid rgba(119, 33, 111, 0.8);
+            }
+
+            /* TODO - Combine with mapInputWrapper if values end up the same */
+            .styleSliderWrapper {
+                margin-top: 35px;
+                margin-left: 20px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 14px;
+                color: #77216F;
+            }
+
+            .styleSlider {
+                width: 90%;
+                //margin: 15px;
+            }
+
+            #loginPanel {
+                width: 400px;
+                margin: 0 auto;
+            }
+
+            #loginButton {
+                color: white;
+                height: 50px;
+                width: 58%;
+                background-color: #77216F;
+                position: relative;
+                bottom: 0;
+                border-radius: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                border-bottom-left-radius: 4px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 20px;
+                text-align: center;
+                line-height: 50px;
+                margin: 0 auto;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                cursor: pointer;
+            }
+
+            #loginButton:hover {
+                background-color: grey;
+                color: #77216F;
+            }
+
+            #teamTitle {
+                text-align: center;
+                font-size: 48px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                color: #77216F;
+                margin: 0 auto;
+                margin-top: 60px;
+            }
+
+            #signUpButton{
+                color: white;
+                height: 50px;
+                width: 200px;
+                background-color: #77216F;
+                //position: relative;
+                bottom: 0;
+                border-radius: 4px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                border-bottom-left-radius: 4px;
+                font-family: 'Lobster', Georgia, Times, serif;
+                font-size: 20px;
+                text-align: center;
+                line-height: 50px;
+                //margin: 0 auto;
+                //margin-top: 20px;
+                //margin-bottom: 20px;
+                cursor: pointer;
+            }
+
+            #signUpButton:hover {
+                background-color: grey;
+                color: #77216F;
+            }
+
+            .topRightButton {
+                float: right;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+
+            #loginErrorMessage {
+                color: red;
+                text-align: center;
+                font-family: 'Cabin', Georgia, Times, serif;
+                width: 70%;
+                margin: 0 auto;
+                margin-top: 20px;
+                
+            }
+
+        </style>
+
+
+    </head>
+    <body>
+
+        <!-- <div id="signUpButton" class="topRightButton" onclick="signUp()">Create Account</div> -->
+        <div id="teamTitle">
+            AllYourCheckIns
+        </div>
+        <div id="loginPanel" class="boxWrap">
+                <div class="mapInputWrapper">
+                    Username:
+                    <input id="usernameSelection" class="mapInput" type="text" placeholder="Enter your Foursquare username...">
+                </div>
+
+                <div class="mapInputWrapper">
+                    Password:
+                    <input id="queryFilter" class="mapInput" type="text" placeholder="Enter your Foursquare password...">
+                </div>
+
+                <!-- <div id="loginErrorMessage">*The username or password you entered is incorrect</div> -->
+
+                {% if errorMessage %}
+                    <div id="loginErrorMessage">*{{errorMessage}}</div>
+                {% endif %}
+
+                <div id="loginButton" onclick="login();">Login</div>
+        </div>
+    </body>
+</html>

@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <title>AllYourCheckIns</title>
+
+        <!-- TODO - Download these and serve from app instead of other sites -->
+
         <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css">
         <link rel="stylesheet" href="http://openlayers.org/dev/examples/style.css" type="text/css">        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
@@ -12,20 +15,22 @@
         <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
         <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /> -->
         <link href='http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css' rel='stylesheet' type='text/css'>
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+        <script src="http://ol3js.org/en/master/examples/loader.js?id=export-map"></script>
+        <script src="http://ol3js.org/en/master/resources/example-behaviour.js"></script>
+        <script src="http://ol3js.org/en/master/build/ol.js"></script>
 
         <script type="text/javascript">
 
-
-            var map;
+            // FIXME - Right now using map as a global variable.  Fix this by defining addPoint and addLine functions here in this script element.
+            //var map;
         
             function init(){
 
                 map = new OpenLayers.Map('map', {
-                    //projection: new OpenLayers.Projection("EPSG:3857"),
-                    //displayProjection: new OpenLayers.Projection("EPSG:4326"),
-                    //projection: 'EPSG:900913',
-                    //projection: 'EPSG:3857',
-                    //projection: 'EPSG:4326',
+                    projection: 'EPSG:3857',
                     layers: [
                         new OpenLayers.Layer.Google(
                             "Google Physical",
@@ -45,73 +50,33 @@
                         )
                     ],
 
-                    //center: new OpenLayers.LonLat(40.67, 73.94),
+                    renderer: ol.RendererHint.CANVAS,
+                    /*
+                    target: 'map',
+                    view: new ol.View2D({
+                        center: [0, 0],
+                        zoom: 2
+                    }),
+                    */
 
-                    center: new OpenLayers.LonLat(286.05, 40.77)
-                    //center: new OpenLayers.LonLat(40.67, 73.94)
+
+                    center: new OpenLayers.LonLat(-73.976955, 40.768537)
                         // Google.v3 uses web mercator as projection, so we have to
                         // transform our coordinates
-                        //.transform('EPSG:4326', 'EPSG:3857'),
-                        .transform('EPSG:4326', 'EPSG:900913'),
-                    zoom: 13 
-                    //zoom: 4
+                        .transform('EPSG:4326', 'EPSG:3857'),
+                    zoom: 14
                 });
+
+                var checkinLayer = new OpenLayers.Layer.Vector("CheckIn Layer");
+                map.addLayer(checkinLayer);
+
                 map.addControl(new OpenLayers.Control.LayerSwitcher());
-                //var lonlat = new OpenLayers.LonLat(74,41).transform(new OpenLayers.Projection("EPSG:3857"),new OpenLayers.Projection("EPSG:900913"));
-                //var lonlat = new OpenLayers.LonLat(41,74).transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:4326"));
 
-                /*
-                var projObject = map.getProjectionObject();
-                debugger;
-                var foundPosition = new OpenLayers.LonLat(41, 74).transform(
-                    new OpenLayers.Projection("EPSG:3857"),
-                    this.map.getProjectionObject()
-                );
-                */
-
-                
-                //map.setCenter(foundPosition, 4);
-                //map.setCenter(lonlat);
-                //map.zoomTo(4);
-
-                /*
-                var coor_from = new OpenLayers.Projection("EPSG:4326");
-                var coor_to   = new OpenLayers.Projection("EPSG:900913");
-                var center    = new OpenLayers.LonLat(74,41);
-                //var map       = new OpenLayers.Map("demoMap");
-                center.transform(coor_from, coor_to);
-                //map.addLayer(new OpenLayers.Layer.OSM());
-                map.setCenter(center, 4);
-                */
-
-                
-                /*
-                var feature = new OpenLayers.Feature.Vector(
-                    new OpenLayers.Geometry.Point(-71, 42),
-                    {some:'data'},
-                    {externalGraphic: 'img/marker.png', graphicHeight: 21, graphicWidth: 16});
-                vectorLayer.addFeatures(feature);
-                */
-                
-                /*
-                map = new OpenLayers.Map('map');
-                var wms = new OpenLayers.Layer.WMS(
-                    "OpenLayers WMS", "http://vmap0.tiles.osgeo.org/wms/vmap0",
-                    {layers: 'basic'}
-                );
-
-                var layer = new OpenLayers.Layer.Vector("GML", {
-                    strategies: [new OpenLayers.Strategy.Fixed()],
-                    protocol: new OpenLayers.Protocol.HTTP({
-                        url: "mapData",
-                        format: new OpenLayers.Format.GeoJSON()
-                    })
-                });
-
-                map.addLayers([wms, layer]);
-                setTimeout(function() { map.zoomToExtent(layer.getDataExtent()); }, 1000);
-                */
-
+                // This changes the button that expands to let users choose the base layer.
+                // TODO - Must add error handling here
+                document.getElementById("OpenLayers_Control_MaximizeDiv_innerImage").remove();
+                var mapChoiceButton = document.getElementById('OpenLayers_Control_MaximizeDiv');
+                mapChoiceButton.innerHTML = '<div id="mapChoiceButtonIcon">+</div>';
             }
         </script>
 
@@ -132,8 +97,55 @@
                 window.alert("This needs to be implemented");
             }
 
+            function addMapFeature(pointOrLine) {
+                var feature = new OpenLayers.Feature.Vector(pointOrLine);
+                var layers = map.getLayersByName("CheckIn Layer");
+                for(var i = 0; i < layers.length; i++) {
+                    layers[i].addFeatures(feature);
+                }
+            }
+
+            function createMapPoint(point) {
+                var mapPoint = new OpenLayers.Geometry.Point(point.longitude, point.latitude);
+                mapPoint.transform(
+                    new OpenLayers.Projection("EPSG:4326"),
+                    new OpenLayers.Projection("EPSG:3857")
+                );
+
+                return mapPoint;
+            }
+
+            function createMapLine(point1, point2) {
+                var mapPoint1 = createMapPoint(point1);
+                var mapPoint2 = createMapPoint(point2);
+                return new OpenLayers.Geometry.LineString([mapPoint1, mapPoint2]);
+            }
+
             function fetchData() {
-            $.get('search/', function(data){alert("Reaching to Foursquare....")});
+                // TODO - Should get the actual data for the user and display it here
+
+                var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
+                var mapPoint1 = createMapPoint(point1);
+                addMapFeature(mapPoint1);
+
+                var point2 = { "latitude": 40.754127, "longitude": -73.981676 };
+                var mapPoint2 = createMapPoint(point2);
+                addMapFeature(mapPoint2);
+    
+                var mapLine1 = createMapLine(point1, point2);
+                addMapFeature(mapLine1);
+
+                var point3 = { "latitude": 40.755557, "longitude": -73.997297};
+                var mapPoint3 = createMapPoint(point3);
+                addMapFeature(mapPoint3);
+    
+                var mapLine2 = createMapLine(point2, point3);
+                addMapFeature(mapLine2);
+
+                // TODO - Add error handling here.  Should extract the fetching of the checkin layer into its own function.
+                var checkinLayer = map.getLayersByName("CheckIn Layer")[0];
+                map.zoomToExtent(checkinLayer.getDataExtent()); 
+            //$.get('search/', function(data){alert("Reaching to Foursquare....")});
             //{
             //document.getElementById("something").submit();
             //}
@@ -147,7 +159,6 @@
         <style type="text/css">
 
             body {
-                //background-color: #5E2750;
                 background: #efece6;
                 margin: 0px;
                 color: #3b3b3b;
@@ -338,7 +349,7 @@
                 font-family: 'Cabin', Georgia, Times, serif;
             }
 
-            .mapInput:focus {
+            .mapInput:focus, .ui-state-focus {
                 box-shadow: 0 0 15px rgba(119, 33, 111, 1);
                 -webkit-box-shadow: 0 0 15px rgba(119, 33, 111, 1)
                 -moz-box-shadow: 0 0 15px rgba(119, 33, 111, 1);
@@ -359,6 +370,26 @@
                 //margin: 15px;
             }
 
+            #OpenLayers_Control_MaximizeDiv {
+                position: absolute;
+                background-color: #77216F;
+                border-top-left-radius: 50%;
+                border-bottom-left-radius: 50%;
+                -moz-border-radius-topleft: 50%;
+                -moz-border-radius-bottomleft: 50%;
+                opacity: .7;
+            }
+
+            #OpenLayers_Control_MaximizeDiv > img {
+                opacity: 0;
+            }
+
+            #mapChoiceButtonIcon {
+                font-size: 20px;
+                text-align: center;
+                line-height: 20px;
+            }
+
         </style>
 
 
@@ -368,7 +399,7 @@
             <div id="upperHeader">
                 <div id="logoutWrapper">
 		    <a href="#">{{Name}} | </a>
-                    <a href="#">Logout</a>
+                    <a href="{%url "login" %}">Logout</a>
                 </div>
             </div>
 
@@ -382,25 +413,20 @@
                 </div>
             </div>
         </div>
-        <form action = "search/" method = "get">
+        <form action = "search/" method = "get" id = "something" >
         <div id="main">
             <div id="leftControlWrapper" class="controlWrapper boxWrap">
                 <div id="controlHeading">Data</div>
                 <hr class="controlDivider">
                 <div id="controls">
                         <div class="mapInputWrapper">
-                            User:
-                            <input id="usernameSelection" name="user" class="mapInput" type="text" placeholder="Enter a Foursquare username...">
+                            Username:
+                            <input readonly id="startDate" name="username" class="mapInput" type="text">
                         </div>
-
-                        <div class="mapInputWrapper">
-                            Query:
-                            <input id="queryFilter" name="query" class="mapInput" type="text" placeholder="Enter a query to filter check-ins by...">
-                        </div>
-
+ 
                         <div class="mapInputWrapper">
                             Start Date:
-                            <input id="startDate" name="startDate"class="mapInput" type="date" placeholder = "Enter in mm-dd-yyy format">
+                            <input id="startDate" name="startDate"class="mapInput" type="date" placeholder = "Enter in mm-dd-yyyy format">
                         </div>
     
                         <div class="mapInputWrapper">

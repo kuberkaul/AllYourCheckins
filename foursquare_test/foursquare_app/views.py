@@ -24,7 +24,6 @@ def mapView(request):
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     #print name
-    
 
 
     template = loader.get_template('mapTemplate.html')
@@ -157,4 +156,15 @@ def search(request):
 	print i ,putToMap[i]
     print putToMap   
     return HttpResponse(putToMap)
+
+
+def login(request):
+    template = loader.get_template('login.html')
+    context = Context()
+    return HttpResponse(template.render(context))
+
+def loginError(request):
+    template = loader.get_template('login.html')
+    context = Context({"errorMessage": "The username or password you entered is incorrect"})
+    return HttpResponse(template.render(context))
 
