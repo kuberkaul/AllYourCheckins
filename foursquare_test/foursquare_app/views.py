@@ -21,6 +21,9 @@ def index(request):
 def mapView(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     code = request.GET.get('code','')
+    friendid = request.GET.get('userid','')
+    friendname = request.GET.get('firstName','')
+    print "friend id is:"+friendid+" friend name is:"+friendname
     # Using access token and creating client object
     accessToken = request.session.get('accessToken')
     if not accessToken:
@@ -28,7 +31,10 @@ def mapView(request):
 	request.session['accessToken'] = accessToken
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
-    name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+    if friendid:
+        name = friendname
+    else:
+        name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     #print name
 
 
@@ -61,7 +67,7 @@ def friendIndex(request):
 
     friends = []
     #print 'All friends of user are :'
-    #print client.users.friends()
+    print client.users.friends()
     for i,key in enumerate(client.users.friends()['friends']['items']):
 	if 'photo' not in key:
 		photo = " "
@@ -77,7 +83,7 @@ def friendIndex(request):
 		lastName = " "
 	else:
 		lastName = key['lastName']
-        friends.append([key['firstName'],lastName,photo,homeCity])
+        friends.append([key['id'],key['firstName'],lastName,photo,homeCity])
         #print i,key['firstName'] 
 
     template = loader.get_template('friendIndexTemplate.html')
