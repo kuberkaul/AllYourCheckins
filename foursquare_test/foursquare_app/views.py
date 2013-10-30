@@ -6,6 +6,12 @@ import foursquare, datetime
 from django.contrib.auth import logout
 
 #from sets import set
+import mimetypes
+from django.shortcuts import render_to_response
+from django import forms
+from django.conf import settings
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 
 # Authenticating the user here
 def index(request):
@@ -105,25 +111,30 @@ def search(request):
     timeFilteredCheckinsBefore.clear()
     timeFilteredCheckinsAfter.clear()
 
+
     if 'username' in request.GET:
         message = request.GET['username']
 	print message
     if 'userid' in request.GET:
  	userid = request.GET['userid']
 	print "userid is:"+userid
-	print client.checkins.recent(params={'id':userid})
+    #userid = "'" + str(userid) + "'"
+        print userid
+    	print "starting now"
+        print client.checkins.recent(params={'limit':'100'})
     else:
-	print client.users.checkins()
+	print "hi"
+    	#print client.users.checkins()
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
-	print message2
+#   print message2
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
-	print message3
+#print message3
 
     if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -157,8 +168,8 @@ def search(request):
 	        	timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
         		venueNamesAfter.append(key['venue']['name'])
 	return HttpResponse(venueNamesAfter)
-    startDate = (datetime.datetime(int(message2[2]),int(message2[1]),int(message2[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    finalDate = (datetime.datetime(int(message3[2]),int(message3[1]),int(message3[0]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     startDate = int(startDate)
     finalDate = int(finalDate)
 
@@ -182,15 +193,15 @@ def search(request):
                 commonSet.append(before)
     intersectionNames = set(commonSet)
     for something in intersectionNames:
-	if something in timeFilteredCheckinsBefore.keys():
-		print something , timeFilteredCheckinsBefore[something]
+        if something in timeFilteredCheckinsBefore.keys():
+        	print something , timeFilteredCheckinsBefore[something]
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 	else:
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 		print something, timeFilteredCheckinsAfter[something]
     for i in putToMap:
 	print i ,putToMap[i]
-    print putToMap   
+    print putToMap
     return HttpResponse(putToMap)
 
 
@@ -207,3 +218,28 @@ def loginError(request):
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
     return HttpResponse(template.render(context))
 
+def save(request):
+	def store_in_s3(filename, content):
+        	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+        	b = conn.create_bucket("allyourcheckinsimages")
+      		mime = mimetypes.guess_type(filename)[0]
+        	k = Key(b)
+        	k.key = filename
+        	k.set_metadata("Content-Type", mime)
+  	  	k.set_contents_from_string(content)
+   	 	k.set_acl("public-read")
+    	photos = PhotoUrl.objects.all().order_by("-uploaded")
+    	if not request.method == "POST":
+        	#f = UploadForm()
+        	return render_to_response("imageIndex.html")
+    	#f = UploadForm(request.POST, request.FILES)
+    	#if not f.is_valid():
+        #	return render_to_response("image.html", { "photos":photos})
+    	file = request.FILES["file"]
+    	filename = file["filename"]
+    	content = file["content"]
+    	store_in_s3(filename, content)
+    	p = PhotoUrl(url="http://allyourcheckinsimages.s3.amazonaws.com/" + filename)
+    	p.save()
+    	photos = PhotoUrl.objects.all().order_by("-uploaded")
+ 	return render_to_response("imageIndex.html", { "photos":photos})
