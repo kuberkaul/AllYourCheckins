@@ -4,6 +4,12 @@ from django.shortcuts import redirect,render_to_response
 from django.template import RequestContext, loader, Context
 import foursquare, datetime
 #from sets import set
+import mimetypes
+from django.shortcuts import render_to_response
+from django import forms
+from django.conf import settings
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 
 # Authenticating the user here
 def index(request):
@@ -92,10 +98,6 @@ def search(request):
     timeFilteredCheckinsBefore.clear()
     timeFilteredCheckinsAfter.clear()
 
-    if 'user' in request.GET:
-        message = request.GET['user']
-    if 'query' in request.GET:
-        message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
@@ -168,3 +170,28 @@ def loginError(request):
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
     return HttpResponse(template.render(context))
 
+def save(request):
+	def store_in_s3(filename, content):
+        	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+        	b = conn.create_bucket("allyourcheckinsimages")
+      		mime = mimetypes.guess_type(filename)[0]
+        	k = Key(b)
+        	k.key = filename
+        	k.set_metadata("Content-Type", mime)
+  	  	k.set_contents_from_string(content)
+   	 	k.set_acl("public-read")
+    	photos = PhotoUrl.objects.all().order_by("-uploaded")
+    	if not request.method == "POST":
+        	#f = UploadForm()
+        	return render_to_response("imageIndex.html")
+    	#f = UploadForm(request.POST, request.FILES)
+    	#if not f.is_valid():
+        #	return render_to_response("image.html", { "photos":photos})
+    	file = request.FILES["file"]
+    	filename = file["filename"]
+    	content = file["content"]
+    	store_in_s3(filename, content)
+    	p = PhotoUrl(url="http://allyourcheckinsimages.s3.amazonaws.com/" + filename)
+    	p.save()
+    	photos = PhotoUrl.objects.all().order_by("-uploaded")
+ 	return render_to_response("imageIndex.html", { "photos":photos})
