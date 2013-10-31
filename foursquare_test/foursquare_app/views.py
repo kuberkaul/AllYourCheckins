@@ -119,7 +119,7 @@ def search(request):
 
 
     if 'username' in request.GET:
-        message = request.GET['username']
+        username = request.GET['username']
     if 'userid' in request.GET:
  	userid = request.GET['userid']
 	friends_checkins = client.checkins.recent()
@@ -150,7 +150,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
      			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
+	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
 
@@ -166,7 +166,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
         		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
+	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         return HttpResponse(template.render(context))
 
 
@@ -180,7 +180,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
- 	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
+ 	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
     
 
@@ -192,7 +192,7 @@ def search(request):
                 for i,key in enumerate(friends_checkins_timestamp['recent']):
                         if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
                                 timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-		context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
+		context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         	return HttpResponse(template.render(context))
 	else:
     		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -225,7 +225,7 @@ def search(request):
     for i in putToMap:
 	print i ,putToMap[i]
     print putToMap
-    context = Context({"CurrentUser":currentUser,"mapCheckins": putToMap})
+    context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
 
