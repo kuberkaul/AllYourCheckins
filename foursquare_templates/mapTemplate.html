@@ -24,7 +24,7 @@
         -->
         <script src="http://ol3js.org/en/master/build/ol.js"></script>
 
-        <script src="http://html2canvas.hertzen.com/build/html2canvas.js"></script>
+        <!-- <script src="http://html2canvas.hertzen.com/build/html2canvas.js"></script> -->
         <!-- <script src="html2canvas.js"></script> -->
 
         <script type="text/javascript">
@@ -62,7 +62,14 @@
                     })
                 }));
 
+                // FIXME - I believe this layer is unnecessary
+                layers.push(new ol.layer.Vector({
+                  source: new ol.source.Vector({
+                    projection: ol.proj.get('EPSG:4326')
+                  })
+                }));
 
+                // FIXME - Don't keep map as a global
                 map = new ol.Map({
                   layers: layers,
                   //renderers: ol.RendererHints.createFromQueryData(),
@@ -76,11 +83,16 @@
                   })
                 });
 
+                // Layer Selection
                 $('#layer-select').change(function() {
                   var style = $(this).find(':selected').val();
                   for (var i = 0; i < layers.length; ++i) {
-                    layers[i].setVisible(styles[i] == style);
+                    // FIXME - This is a hack to avoid messing with the checkin Layer and must be fixed
+                    if(i !== 5) {
+                    	layers[i].setVisible(styles[i] == style);
+                  	}
                   }
+
                 });
                 $('#layer-select').trigger('change');
 
@@ -100,97 +112,12 @@
                    */
                   info.style.display = '';
                 }
-
+		{%if mapCheckins %}
+			fetchData();	
+		{% endif %}
             }
         </script>
 
-        <!--
-        <script type="text/javascript">
-            // FIXME - Right now using map as a global variable.  Fix this by defining addPoint and addLine functions here in this script element.
-            //var map;
-        
-            function init(){
-
-                map = new OpenLayers.Map('map', {
-                    projection: 'EPSG:3857',
-                    layers: [
-                        new OpenLayers.Layer.Google(
-                            "Google Physical",
-                            {type: google.maps.MapTypeId.TERRAIN}
-                        ),
-                        new OpenLayers.Layer.Google(
-                            "Google Streets", // the default
-                            {numZoomLevels: 20}
-                        ),
-                        new OpenLayers.Layer.Google(
-                            "Google Hybrid",
-                            {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20}
-                        ),
-                        new OpenLayers.Layer.Google(
-                            "Google Satellite",
-                            {type: google.maps.MapTypeId.SATELLITE, numZoomLevels: 22}
-                        )
-                    ],
-
-                    renderer: ol.RendererHint.CANVAS,
-                    //target: 'map',
-                    //view: new ol.View2D({
-                    //    center: [0, 0],
-                    //    zoom: 2
-                    //}),
-
-
-                    center: new OpenLayers.LonLat(-73.976955, 40.768537)
-                        // Google.v3 uses web mercator as projection, so we have to
-                        // transform our coordinates
-                        .transform('EPSG:4326', 'EPSG:3857'),
-                    zoom: 14
-                });
-
-                var checkinLayer = new OpenLayers.Layer.Vector("CheckIn Layer");
-                map.addLayer(checkinLayer);
-
-                map.addControl(new OpenLayers.Control.LayerSwitcher());
-
-
-                // FIXME - This is only kept around so I can quickly download the png image to make sure it's correct
-                var exportPNGElement = document.getElementById('export-png');
-
-                if ('download' in exportPNGElement) {
-                  exportPNGElement.addEventListener('click', function(e) {
-                    //e.target.href = map.getRenderer().getCanvas().toDataURL('image/png');
-
-
-                    //html2canvas([document.getElementById('map')], {
-                    html2canvas([document.getElementById('OpenLayers_Map_10_OpenLayers_Container')], {
-                        onrendered: function(canvas) {
-                            e.target.href = canvas.toDataURL('image/png');
-
-                            debugger;
-                           //pngImageInBase64 = canvas.toDataURL('image/png');
-                           // AJAX call to send `data` to a PHP file that creates an image from the dataURI string and saves it to a directory on the server
-                        }
-                    });
-
-                  }, false);
-                } else {
-                  var info = document.getElementById('no-download');
-                  /**
-                   * display error message
-                   */
-                  info.style.display = '';
-                }
-
-
-                // This changes the button that expands to let users choose the base layer.
-                // TODO - Must add error handling here
-                document.getElementById("OpenLayers_Control_MaximizeDiv_innerImage").remove();
-                var mapChoiceButton = document.getElementById('OpenLayers_Control_MaximizeDiv');
-                mapChoiceButton.innerHTML = '<div id="mapChoiceButtonIcon">+</div>';
-
-            }
-        </script>
-        -->
         <script>
           $(function() {
             // setup master volume
@@ -204,7 +131,7 @@
         </script>
 
         <script type="text/javascript">
-
+            //document.onload = function() {
 
                 function saveTimeline() {
                     var pngImageInBase64;
@@ -240,54 +167,148 @@
 		    form.submit();	
                 }
 
-                function addMapFeature(pointOrLine) {
-                    var feature = new OpenLayers.Feature.Vector(pointOrLine);
-                    var layers = map.getLayersByName("CheckIn Layer");
-                    for(var i = 0; i < layers.length; i++) {
-                        layers[i].addFeatures(feature);
-                    }
+                function createPoint(point) {
+                    return {    
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [point.longitude, point.latitude]
+                            }
+                    };
                 }
 
-                function createMapPoint(point) {
-                    var mapPoint = new OpenLayers.Geometry.Point(point.longitude, point.latitude);
-                    mapPoint.transform(
-                        new OpenLayers.Projection("EPSG:4326"),
-                        new OpenLayers.Projection("EPSG:3857")
-                    );
-
-                    return mapPoint;
+                function createLine(point1, point2) {
+                    return {
+                        type: 'Feature',
+                        properties: {
+                          'color': '#F3F315',
+                          'where': 'inner'
+                        },
+                        geometry: {
+                          type: 'LineString',
+                          coordinates: [[point1.longitude, point1.latitude], [point2.longitude, point2.latitude]]
+                        }
+                    };
                 }
 
-                function createMapLine(point1, point2) {
-                    var mapPoint1 = createMapPoint(point1);
-                    var mapPoint2 = createMapPoint(point2);
-                    return new OpenLayers.Geometry.LineString([mapPoint1, mapPoint2]);
+                function addLine(point1, point2) {
+                    var data = {
+                      type: 'FeatureCollection',
+                      features: [{
+                        type: 'Feature',
+                        properties: {
+                          'color': '#F3F315',
+                          'where': 'inner'
+                        },
+                        geometry: {
+                          type: 'LineString',
+                          coordinates: [[point1.longitude, point1.latitude], [point2.longitude, point2.latitude]]
+                        }
+                      }]
+                    };
+
+                    //var attr = data.features[0].getAttributes();
+    
+                    //debugger;
+                    /*
+                    var style = new ol.style.Style({
+                      symbolizers: [
+                        new ol.style.Shape({
+                          size: 12,
+                          fill: new ol.style.Fill({
+                            color: '#F3F315',
+                            opacity: 0.6
+                          }),
+                          stroke: new ol.style.Stroke({
+                            color: '#F3F315',
+                            opacity: 0.9
+                          })
+                        })
+                      ]
+                    });
+                    */
+
+                    var vector = new ol.layer.Vector({
+                      //style: style,
+                      source: new ol.source.Vector({
+                        parser: new ol.parser.GeoJSON(),
+                        data: data
+                      })
+                    });
+
+                    map.addLayer(vector);
+
+
                 }
 
                 function fetchData() {
+
+                    // FIXME - Relying on the # of layers not changing and the last one always being the checkin layer.
+                    // Remove previous checkin layers if they exist
+                    var layerContainer = map.getLayers();
+                    while(layerContainer.getLength() > 6){
+                        layerContainer.pop();
+                    }
+ 
+
                     // TODO - Should get the actual data for the user and display it here
 
+                    var features = [];
+
                     var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
-                    var mapPoint1 = createMapPoint(point1);
-                    addMapFeature(mapPoint1);
-
                     var point2 = { "latitude": 40.754127, "longitude": -73.981676 };
-                    var mapPoint2 = createMapPoint(point2);
-                    addMapFeature(mapPoint2);
-        
-                    var mapLine1 = createMapLine(point1, point2);
-                    addMapFeature(mapLine1);
+                    var point3 = { "latitude": 40.755557, "longitude": -73.997297 };
 
-                    var point3 = { "latitude": 40.755557, "longitude": -73.997297};
-                    var mapPoint3 = createMapPoint(point3);
-                    addMapFeature(mapPoint3);
-        
-                    var mapLine2 = createMapLine(point2, point3);
-                    addMapFeature(mapLine2);
+                    features.push(createPoint(point1));
+                    features.push(createPoint(point2));
+                    features.push(createPoint(point3));
 
+                    // TODO - So far I've been unable to get lines to show up on the map all on the same layer.  For now use the addLine function which creates a new layer for every line.
+                    //features.push(createLine(point1, point2));
+                    //features.push(createLine(point2, point3));
+
+                    addLine(point1, point2);
+                    addLine(point2, point3);
+
+                    var data = {
+                      type: 'FeatureCollection',
+                      features: features
+                    };
+
+                    var style = new ol.style.Style({
+                      symbolizers: [
+                        new ol.style.Shape({
+                          size: 12,
+                          fill: new ol.style.Fill({
+                            color: '#F3F315',
+                            opacity: 0.6
+                          }),
+                          stroke: new ol.style.Stroke({
+                            color: '#F3F315',
+                            opacity: 0.2
+                          })
+                        })
+                      ]
+                    });
+
+                    var vector = new ol.layer.Vector({
+                      style: style, 
+                      source: new ol.source.Vector({
+                        parser: new ol.parser.GeoJSON(),
+                        data: data
+                      })
+                    });
+
+                    map.addLayer(vector);
+
+                    // TODO - Zoom to extent of features.  Note - What happens if there are no features added and you zoom to extent?
+
+                    /*
                     // TODO - Add error handling here.  Should extract the fetching of the checkin layer into its own function.
                     var checkinLayer = map.getLayersByName("CheckIn Layer")[0];
                     map.zoomToExtent(checkinLayer.getDataExtent()); 
+                    */
+
                 //$.get('search/', function(data){alert("Reaching to Foursquare....")});
                 //{
                 //document.getElementById("something").submit();
@@ -371,9 +392,9 @@
             }
 
             #logoutWrapper {
-                width: 190px;
-                text-align: center;
+                text-align: right;
                 float: right;
+                padding-right: 20px;
             }
             
             #logoutWrapper a {
@@ -542,7 +563,7 @@
         <div id="header">
             <div id="upperHeader">
                 <div id="logoutWrapper">
-		    <a href="#">{{Name}} | </a>
+		    <a href="{% url "mapView" %}">{{CurrentUser}} | </a>
                     <a href="{%url "logout" %}">Logout</a>
                 </div>
             </div>
@@ -580,8 +601,10 @@
                             <input id="endDate" name="endDate" class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
                         </div>
                 </div>
-                <input type = "submit" id="actionButton" value = "Fetch Data">
-                <!-- <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div> -->
+
+                <!-- NOTE - This input element on the next line was uncommented and the following div element was commented out.  I switched them so I could work on getting points.  Feel free to switch them back -->
+                <!-- <input type = "submit" id="actionButton" value = "Fetch Data"> -->
+                <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div>
             </div>
 	  </form>
             <div id="rightColumn" class="boxWrap">
