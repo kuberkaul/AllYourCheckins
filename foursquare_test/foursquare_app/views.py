@@ -39,17 +39,19 @@ def mapView(request):
 	request.session['accessToken'] = accessToken
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
+    currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+
     if friendid:
         name = friendname
         id = friendid
     else:
-        name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+        name= currentUser 
         id = '' 
     #print name
 
 
     template = loader.get_template('mapTemplate.html')
-    context = Context({"Name":name,"Id":id})
+    context = Context({"CurrentUser":currentUser,"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
@@ -103,7 +105,7 @@ def friendIndex(request):
 def search(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
-    name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+    currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     timeFilteredCheckinsBefore = {}
     timeFilteredCheckinsAfter = {}
     venueNamesBefore = []
@@ -143,7 +145,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
      			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"mapCheckins": timeFilteredCheckinsBefore})
+	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
 
@@ -161,7 +163,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
         		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"mapCheckins": timeFilteredCheckinsBefore})
+	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
         return HttpResponse(template.render(context))
 
 
@@ -175,7 +177,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
- 	context = Context({"mapCheckins": timeFilteredCheckinsBefore})
+ 	context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
     
 
@@ -187,7 +189,7 @@ def search(request):
                 for i,key in enumerate(client.checkins.recent(params={'afterTimestamp':startDate})['recent']):
                         if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
                                 timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-		context = Context({"mapCheckins": timeFilteredCheckinsBefore})
+		context = Context({"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
         	return HttpResponse(template.render(context))
 	else:
     		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -220,7 +222,7 @@ def search(request):
     for i in putToMap:
 	print i ,putToMap[i]
     print putToMap
-    context = Context({"mapCheckins": putToMap})
+    context = Context({"CurrentUser":currentUser,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
 
