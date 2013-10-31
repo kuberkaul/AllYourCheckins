@@ -107,6 +107,7 @@
             //document.onload = function() {
 
                 function saveTimeline() {
+                    debugger;
                     var pngImageInBase64;
                     var pngImageInBase64 = map.getRenderer().getCanvas().toDataURL('image/png');
                     
@@ -125,6 +126,10 @@
 		    alert("The timeline will be saved now!");
 		    form.submit();	
                 }
+
+                $('#saveTimelineButton').click(function(){
+                    saveTimeline();
+                });
 
                 function createPoint(point) {
                     return {    
@@ -812,7 +817,7 @@
 
                 </div>
 	<form action = "mapView/" method="post" id="savingImages">{% csrf_token %}
-                <input id="saveTimelineButton" name="Save Timeline" type="submit" value="Save Timeline" class="actionButton" onclick="saveTimeline();"/>
+                <input id="saveTimelineButton" name="Save Timeline" type="submit" value="Save Timeline" class="actionButton" />
                 <!-- <div id="saveTimelineButton" class="actionButton" download="map.png">Save Timeline</div> -->
                 <!-- <a id="export-png" class="actionButton" download="map.png">Save Timeline</a> -->
             </div>
