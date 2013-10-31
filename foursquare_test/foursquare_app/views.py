@@ -122,13 +122,13 @@ def search(request):
         username = request.GET['username']
     if 'userid' in request.GET:
  	userid = request.GET['userid']
+	print "userid is"+userid
 	friends_checkins = client.checkins.recent()
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
-	print message2
     if request.GET['startDate'] != "":
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
     	startDate = int(startDate)
@@ -181,6 +181,7 @@ def search(request):
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
  	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	print timeFilteredCheckinsBefore
     	return HttpResponse(template.render(context))
     
 
