@@ -238,6 +238,10 @@ def login(request):
     return HttpResponse(template.render(context))
 
 def logoutuser(request):
+    try:
+        del request.session['accessToken']
+    except KeyError:
+        pass
     return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
 
 def loginError(request):
