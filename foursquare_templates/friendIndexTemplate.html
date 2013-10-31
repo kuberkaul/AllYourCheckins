@@ -74,6 +74,7 @@
                 list-style-type: none;
                 margin: 0;
                 padding: 0;
+
             }
 
             #mainNavInner {
@@ -154,6 +155,7 @@
                 height: 512px;
                 float: left;
                 overflow: auto;
+                background-color:white;
             }
 
             .friendIndexItem {
@@ -176,6 +178,7 @@
                 -webkit-box-shadow: 0 0 15px rgba(119, 33, 111, 1);
                 -moz-box-shadow: 0 0 15px rgba(119, 33, 111, 1);
                 border:1px solid rgba(119, 33, 111, 0.8);
+                background-color:#FFFFDB;
             }
 
             #goToTimelineButton {
@@ -202,6 +205,10 @@
 
             #leftControlWrapper {
                 position: relative;
+                font-style: italic;
+                font-weight:bold;
+                color: darkmagenta;
+                background-color:#FAFAFF;
             }
 
             #mapWrapper {
@@ -221,6 +228,7 @@
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
                 background: white;
                 margin: 4px;
+                
             }
 
             #map {
@@ -264,15 +272,15 @@
                 {% for username in usernameList %}
 			
                         <div class="friendIndexItem boxWrap" onclick="selectUser(this);">
-				<div id="firstName" class="mapInputWrapper">{{username.1}}</div>
-				<div id="lastName" class="mapInputWrapper">{{username.2}}</div>
-				<div id="id" class="mapInputWrapper">{{username.0}}</div>
+                            <div id="firstName" class="mapInputWrapper" style = "font-style:italic;font-family:algerian;font-color:blue">{{username.1}}</div>
+                            <div id="lastName" class="mapInputWrapper"><font face="algerian"><b><i>{{username.2}}</b></i></div>
+                            <div id="id" class="mapInputWrapper"><b><i>User-ID : {{username.0}}</b></i></div>
 				<div id="dpprefix">{{ username.3.prefix }}</div>
 				<div id="dpsuffix">{{ username.3.suffix }}</div>
-				<div id="homeCity" class="mapInputWrapper"><p><img id="dp" height ="110" width="110"></p></div>
-				<div id="photo" >{{username.4}}</div>
+				<div id="homeCity" class="mapInputWrapper"><p><img id="dp" height ="250" width="270"></p></div>
+				<div id="photo" ><b><i>Hometown : {{username.4}}</b></i></div>
 			
-			{{ username.1 }}</div>
+                            {{ username.1 }}</div>
                 {% endfor %}
             </div>
         </div>
