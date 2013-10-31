@@ -100,7 +100,9 @@
                    */
                   info.style.display = '';
                 }
-
+		{%if mapCheckins %}
+			fetchData();	
+		{% endif %}
             }
         </script>
 
@@ -254,7 +256,11 @@
 
                 function fetchData() {
                     // TODO - Should get the actual data for the user and display it here
+		   alert("In Fetch Data");
 
+		    {% for name,location in mapCheckins.iteritems %}
+			console.log("{{name}}"+"{{location.0}}"+"{{location.1}}");
+		    {% endfor %}
                     var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
                     var mapPoint1 = createMapPoint(point1);
                     addMapFeature(mapPoint1);
