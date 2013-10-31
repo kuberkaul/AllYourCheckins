@@ -98,7 +98,7 @@ def friendIndex(request):
 
     friends = []
     #print 'All friends of user are :'
-    print client.users.friends()
+    #print client.users.friends()
     for i,key in enumerate(client.users.friends()['friends']['items']):
 	if 'photo' not in key:
 		photo = " "
@@ -141,17 +141,18 @@ def search(request):
         username = request.GET['username']
     if 'userid' in request.GET:
  	userid = request.GET['userid']
-	print "userid is"+userid
+	print username+"is the user and userid is"+userid
 	friends_checkins = client.checkins.recent()
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
         message2 = request.GET['startDate']
         message2 = message2.split('-')
-    if request.GET['startDate'] != "":
-	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
-    	startDate = int(startDate)
-    	friends_checkins_timestamp = client.checkins.recent(params={'afterTimestamp':startDate})
+    if 'startDate' in request.GET:
+    	if request.GET['startDate'] != "":
+		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
+    		startDate = int(startDate)
+    		friends_checkins_timestamp = client.checkins.recent(params={'afterTimestamp':startDate})
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
@@ -169,7 +170,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
      			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
 
@@ -185,7 +186,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
         		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         return HttpResponse(template.render(context))
 
 
@@ -199,8 +200,8 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
- 	context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
-	print timeFilteredCheckinsBefore
+ 	context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	#print timeFilteredCheckinsBefore
     	return HttpResponse(template.render(context))
     
 
@@ -212,7 +213,7 @@ def search(request):
                 for i,key in enumerate(friends_checkins_timestamp['recent']):
                         if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
                                 timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-		context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+		context = RequestContext( request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         	return HttpResponse(template.render(context))
 	else:
     		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -237,15 +238,15 @@ def search(request):
     intersectionNames = set(commonSet)
     for something in intersectionNames:
         if something in timeFilteredCheckinsBefore.keys():
-        	print something , timeFilteredCheckinsBefore[something]
+        	#print something , timeFilteredCheckinsBefore[something]
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 	else:
 		putToMap[something] = timeFilteredCheckinsBefore[something]
-		print something, timeFilteredCheckinsAfter[something]
-    for i in putToMap:
-	print i ,putToMap[i]
-    print putToMap
-    context = Context({"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
+		#print something, timeFilteredCheckinsAfter[something]
+    #for i in putToMap:
+#	print i ,putToMap[i]
+ #   print putToMap
+    context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
 
