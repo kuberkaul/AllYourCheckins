@@ -115,8 +115,8 @@
 		   //console.log(pngImageInBase64);
 		   // var encodedStr = encodeURIComponent(pngImageInBase64);
 		   // window.location = "/foursquare_app/mapView?imgString="+encodedStr;
-		    form = document.getElementById("savingImages");
-		    input = document.createElement("input");
+		    var form = document.getElementById("savingImages");
+		    var input = document.createElement("input");
 		    input.setAttribute("name","imageString");
 		    input.setAttribute("value",pngImageInBase64);
 		    form.appendChild(input);
