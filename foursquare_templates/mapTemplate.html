@@ -24,7 +24,7 @@
         -->
         <script src="http://ol3js.org/en/master/build/ol.js"></script>
 
-        <script src="http://html2canvas.hertzen.com/build/html2canvas.js"></script>
+        <!-- <script src="http://html2canvas.hertzen.com/build/html2canvas.js"></script> -->
         <!-- <script src="html2canvas.js"></script> -->
 
         <script type="text/javascript">
@@ -62,6 +62,7 @@
                     })
                 }));
 
+                // FIXME - I believe this layer is unnecessary
                 layers.push(new ol.layer.Vector({
                   source: new ol.source.Vector({
                     projection: ol.proj.get('EPSG:4326')
@@ -239,7 +240,6 @@
  
 
                     // TODO - Should get the actual data for the user and display it here
-		   alert("In Fetch Data");
 
                     var features = [];
 
@@ -380,9 +380,9 @@
             }
 
             #logoutWrapper {
-                width: 190px;
-                text-align: center;
+                text-align: right;
                 float: right;
+                padding-right: 20px;
             }
             
             #logoutWrapper a {
@@ -589,8 +589,10 @@
                             <input id="endDate" name="endDate" class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
                         </div>
                 </div>
-                <input type = "submit" id="actionButton" value = "Fetch Data">
-                <!-- <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div> -->
+
+                <!-- NOTE - This input element on the next line was uncommented and the following div element was commented out.  I switched them so I could work on getting points.  Feel free to switch them back -->
+                <!-- <input type = "submit" id="actionButton" value = "Fetch Data"> -->
+                <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div>
             </div>
 
             <div id="rightColumn" class="boxWrap">
