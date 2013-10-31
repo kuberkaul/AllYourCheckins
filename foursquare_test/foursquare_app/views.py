@@ -136,6 +136,10 @@ def search(request):
     template = loader.get_template('mapTemplate.html')
 
 
+    # FIXME - This is to avoid weird crash we're getting
+    if 'startDate' not in request.GET:
+        return mapView(request)
+
 
     if 'username' in request.GET:
         username = request.GET['username']
@@ -156,7 +160,6 @@ def search(request):
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
-
 
     if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
