@@ -236,37 +236,13 @@ def login(request):
     template = loader.get_template('login.html')
     context = Context()
     return HttpResponse(template.render(context))
+
 def logoutuser(request):
     return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
+
 def loginError(request):
     template = loader.get_template('login.html')
     context = Context({"errorMessage": "The username or password you entered is incorrect"})
     return HttpResponse(template.render(context))
 
-"""
-def save(request):
-	def store_in_s3(filename, content):
-        	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
-        	b = conn.create_bucket("allyourcheckinsimages")
-      		mime = mimetypes.guess_type(filename)[0]
-        	k = Key(b)
-        	k.key = filename
-        	k.set_metadata("Content-Type", mime)
-  	  	k.set_contents_from_string(content)
-   	 	k.set_acl("public-read")
-    	photos = PhotoUrl.objects.all().order_by("-uploaded")
-    	if not request.method == "POST":
-        	#f = UploadForm()
-        	return render_to_response("imageIndex.html")
-    	#f = UploadForm(request.POST, request.FILES)
-    	#if not f.is_valid():
-        #	return render_to_response("image.html", { "photos":photos})
-    	file = request.FILES["file"]
-    	filename = file["filename"]
-    	content = file["content"]
-    	store_in_s3(filename, content)
-    	p = PhotoUrl(url="http://allyourcheckinsimages.s3.amazonaws.com/" + filename)
-    	p.save()
-    	photos = PhotoUrl.objects.all().order_by("-uploaded")
- 	return render_to_response("imageIndex.html", { "photos":photos})
-"""
+
