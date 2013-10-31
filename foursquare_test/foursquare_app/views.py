@@ -1,7 +1,7 @@
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
-from django.template import RequestContext, loader, Context
+from django.template import Context, loader, RequestContext
 import foursquare, datetime
 from django.contrib.auth import logout
 
@@ -12,6 +12,9 @@ from django import forms
 from django.conf import settings
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from foursquare_app.models import savedTimelines
+import base64
+import datetime
 
 # Authenticating the user here
 def index(request):
@@ -45,9 +48,18 @@ def mapView(request):
         id = '' 
     #print name
 
+    imageString = request.POST.get('imageString','')
+
+    if imageString:
+    	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+    	b = conn.create_bucket("allyourcheckinsimages"+client.users()['user']['id'])
+    	k = Key(b)
+    	k.key = client.users()['user']['id']+"_"+unicode(datetime.datetime.now()) 
+    	k.set_contents_from_string(imageString)
+
 
     template = loader.get_template('mapTemplate.html')
-    context = Context({"Name":name,"Id":id})
+    context = RequestContext(request,{"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
@@ -55,16 +67,19 @@ def imageIndex(request):
     # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+    currentId = client.users()['user']['id']
 
     imageList = []
-    imageList.append({"src": "http://gadgetsteria.com/wp-content/uploads/2013/06/wpid-foursquare-time-top1.jpg", "title": "First Timeline"})
-    imageList.append({"src": "http://wac.450f.edgecastcdn.net/80450F/lite987.com/files/2013/06/foursquare-time-machine-all-places-map.jpg", "title": "Another Timeline"})
-    imageList.append({"src": "http://media.mediapost.com/dam/cropped/2013/06/13/san-francisco-map-b_2.jpg", "title": "Timeline 3"})
-    imageList.append({"src": "http://images.itechpost.com/data/images/full/6964/foursquare-time-machine.jpg", "title": "Fourth"})
-    imageList.append({"src": "http://monikarunstrom.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-13-at-9.20.57-AM.png", "title": ""})
+    conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+    b = conn.get_bucket("allyourcheckinsimages"+client.users()['user']['id'])
+    for k in b.list():
+	l=k.key.split("_")
+	if l[0]==client.users()['user']['id']:
+    	    src=k.get_contents_as_string()
+	    imageList.append({"src": src,"title": "First Timeline"})
 
     template = loader.get_template('imageIndexTemplate.html')
-    context = Context({"imageList": imageList,"Name":name})
+    context = RequestContext(request,{"imageList": imageList,"Name":name})
     return HttpResponse(template.render(context))
 
 def friendIndex(request):
@@ -95,7 +110,7 @@ def friendIndex(request):
         #print i,key['firstName'] 
 
     template = loader.get_template('friendIndexTemplate.html')
-    context = Context({"usernameList": friends,"Name":name})
+    context = RequestContext(request,{"usernameList": friends,"Name":name})
     return HttpResponse(template.render(context))
 
 def search(request):
@@ -209,25 +224,24 @@ def login(request):
     if request.session['accessToken']:
         del request.session['accessToken']
     template = loader.get_template('login.html')
-    context = Context()
+    context = RequestContext()
     return HttpResponse(template.render(context))
 def logoutuser(request):
     return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
 def loginError(request):
     template = loader.get_template('login.html')
-    context = Context({"errorMessage": "The username or password you entered is incorrect"})
+    context = RequestContext(request,{"errorMessage": "The username or password you entered is incorrect"})
     return HttpResponse(template.render(context))
 
-def save(request):
-	def store_in_s3(filename, content):
-        	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
-        	b = conn.create_bucket("allyourcheckinsimages")
-      		mime = mimetypes.guess_type(filename)[0]
-        	k = Key(b)
-        	k.key = filename
-        	k.set_metadata("Content-Type", mime)
-  	  	k.set_contents_from_string(content)
-   	 	k.set_acl("public-read")
+def saveTimeline(request):
+     	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+        b = conn.create_bucket("allyourcheckinsimages")
+   	mime = mimetypes.guess_type(filename)[0]
+       	k = Key(b)
+        k.key = filename
+        k.set_metadata("Content-Type", mime)
+        k.set_contents_from_string(content)
+    	k.set_acl("public-read")
     	photos = PhotoUrl.objects.all().order_by("-uploaded")
     	if not request.method == "POST":
         	#f = UploadForm()

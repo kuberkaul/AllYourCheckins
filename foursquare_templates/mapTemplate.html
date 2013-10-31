@@ -224,8 +224,20 @@
                     */
 
 
-                    window.alert("The map was converted to a png.  The saveTimeline function in mapTemplate.html needs to be changed to save it to the user's images.  It's base64 encoding is:\n" + pngImageInBase64);
+                    //window.alert("The map was converted to a png.  The saveTimeline function in mapTemplate.html needs to be changed to save it to the user's images.  It's base64 encoding is:\n" + pngImageInBase64);
                     // TODO - Save this to the user's images
+		   //console.log(pngImageInBase64);
+		   // var encodedStr = encodeURIComponent(pngImageInBase64);
+		   // window.location = "/foursquare_app/mapView?imgString="+encodedStr;
+		    form = document.getElementById("savingImages");
+		    input = document.createElement("input");
+		    input.setAttribute("name","imageString");
+		    input.setAttribute("value",pngImageInBase64);
+		    form.appendChild(input);
+		    
+		    console.log(pngImageInBase64);
+		    alert("The timeline will be saved now!");
+		    form.submit();	
                 }
 
                 function addMapFeature(pointOrLine) {
@@ -571,7 +583,7 @@
                 <input type = "submit" id="actionButton" value = "Fetch Data">
                 <!-- <div input type="submit" value="search" method ="get" id="actionButton" onclick="fetchData();">Fetch Data</div> -->
             </div>
-
+	  </form>
             <div id="rightColumn" class="boxWrap">
                 <!-- <div id="mapWrapper"></div> -->
                 <div id="map"></div>
@@ -611,10 +623,12 @@
                     </div>
 
                 </div>
-                <div id="saveTimelineButton" class="actionButton" onclick="saveTimeline();">Save Timeline</div>
+	<form action = "mapView/" method="post" id="savingImages">{% csrf_token %}
+                <input id="saveTimelineButton" name="Save Timeline" type="submit" value="Save Timeline" class="actionButton" onclick="saveTimeline();"/>
                 <!-- <div id="saveTimelineButton" class="actionButton" download="map.png">Save Timeline</div> -->
                 <!-- <a id="export-png" class="actionButton" download="map.png">Save Timeline</a> -->
             </div>
+	</form>
         </div>
     </body>
 </html>

@@ -7,7 +7,20 @@
 
         <script type="text/javascript">
             function downloadImage() {
-                window.alert("This needs to be implemented");
+		/*var exportPNGElement = document.getElementById('export-png');
+
+                if ('download' in exportPNGElement) {
+                  exportPNGElement.addEventListener('click', function(e) {
+                    e.target.href = map.getRenderer().getCanvas().toDataURL('image/png');
+                  }, false);
+                } else {
+                  var info = document.getElementById('no-download');
+                  /**
+                   * display error message
+                   */
+                  info.style.display = '';
+                }
+	*/
             }
 
             function selectImage(imageElement) {
@@ -253,8 +266,8 @@
 
             <div id="imageIndexWrapper" class="boxWrap">
                 {% for image in imageList %}
-                    <div class="imageIndexItem boxWrap" onclick="selectImage(this);" title="{{image.title}}" style="background-image: url({{image.src}});">
-                    </div>
+                    <a href="{{image.src}}" download="timeline.png"><div class="imageIndexItem boxWrap" onclick="selectImage(this);" title="{{image.title}}" style="background-image: url({{image.src}});">
+                    </div></a>
                 {% endfor %}
             </div>
         </div>
