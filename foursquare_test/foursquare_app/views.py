@@ -72,17 +72,23 @@ def imageIndex(request):
     currentId = client.users()['user']['id']
 
     imageList = []
-    conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
-    b = conn.get_bucket("allyourcheckinsimages"+client.users()['user']['id'])
-    for k in b.list():
-	l=k.key.split("_")
-	if l[0]==client.users()['user']['id']:
-    	    src=k.get_contents_as_string()
-	    imageList.append({"src": src,"title": "First Timeline"})
 
-    template = loader.get_template('imageIndexTemplate.html')
-    context = RequestContext(request,{"imageList": imageList,"Name":name})
-    return HttpResponse(template.render(context))
+    try:
+    	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
+    	b = conn.get_bucket("allyourcheckinsimages"+client.users()['user']['id'])
+    	for k in b.list():
+		l=k.key.split("_")
+		if l[0]==client.users()['user']['id']:
+    	    		src=k.get_contents_as_string()
+	    		imageList.append({"src": src,"title": "First Timeline"})
+
+    	template = loader.get_template('imageIndexTemplate.html')
+    	context = RequestContext(request,{"imageList": imageList,"Name":name})
+    	return HttpResponse(template.render(context))
+    except:
+	template = loader.get_template('imageIndexTemplate.html')
+        context = RequestContext(request,{"imageList": imageList,"Name":name})
+        return HttpResponse(template.render(context))
 
 def friendIndex(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')

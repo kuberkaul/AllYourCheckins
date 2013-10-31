@@ -252,23 +252,34 @@
  
 
                     // TODO - Should get the actual data for the user and display it here
-
+                    n=1;
+                    var point = new Array();
+                    point = 'point' + n;
+                    var features = [];
+                    {% for name,location in mapCheckins.iteritems %}
+                    console.log("{{name}}"+"{{location.0}}"+"{{location.1}}");
+                    var point = { "latitude": location.0, "longitude": location.1};
+                    features.push(createPoint(point));
+                    //addLine(point1, point);
+                    n += 1;
+                    {% endfor %}
+                    
                     var features = [];
 
-                    var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
-                    var point2 = { "latitude": 40.754127, "longitude": -73.981676 };
-                    var point3 = { "latitude": 40.755557, "longitude": -73.997297 };
+                    //var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
+                    //var point2 = { "latitude": 40.754127, "longitude": -73.981676 };
+                    //var point3 = { "latitude": 40.755557, "longitude": -73.997297 };
 
-                    features.push(createPoint(point1));
-                    features.push(createPoint(point2));
-                    features.push(createPoint(point3));
+                    //features.push(createPoint(point1));
+                    //features.push(createPoint(point2));
+                    //features.push(createPoint(point3));
 
                     // TODO - So far I've been unable to get lines to show up on the map all on the same layer.  For now use the addLine function which creates a new layer for every line.
                     //features.push(createLine(point1, point2));
                     //features.push(createLine(point2, point3));
 
-                    addLine(point1, point2);
-                    addLine(point2, point3);
+                    //addLine(point1, point2);
+                    //addLine(point2, point3);
 
                     var data = {
                       type: 'FeatureCollection',
