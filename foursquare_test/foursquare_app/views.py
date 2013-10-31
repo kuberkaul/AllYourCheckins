@@ -61,7 +61,7 @@ def mapView(request):
 
 
     template = loader.get_template('mapTemplate.html')
-    context = Context({"CurrentUser":currentUser,"Name":name,"Id":id})
+    context = RequestContext(request,{"CurrentUser":currentUser,"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
