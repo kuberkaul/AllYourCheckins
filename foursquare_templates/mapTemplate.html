@@ -120,7 +120,20 @@
 		    var input = document.createElement("input");
 		    input.setAttribute("name","imageString");
 		    input.setAttribute("value",pngImageInBase64);
-		    form.appendChild(input);
+
+		    var inputStartDate = document.createElement("input");
+		    inputStartDate.setAttribute("name","startDate");
+		    inputStartDate.setAttribute("value","");
+
+		    var inputEndDate = document.createElement("input");
+		    inputEndDate.setAttribute("name","endDate");
+		    inputEndDate.setAttribute("value","");
+
+            //document.getElementById('saveImagesStartDate').value = '';
+            //document.getElementById('saveImagesEndDate').value = '';
+		    //form.appendChild(input);
+		    //form.appendChild(inputStartDate);
+		    //form.appendChild(inputEndDate);
 		    
 		    console.log(pngImageInBase64);
 		    alert("The timeline will be saved now!");
@@ -324,6 +337,8 @@
 		    input = document.createElement("input");
 		    input.setAttribute("name","imageString");
 		    input.setAttribute("value",pngImageInBase64);
+		    input.setAttribute("startDate","");
+		    input.setAttribute("endDate","");
 		    form.appendChild(input);
 		    
 		    console.log(pngImageInBase64);
@@ -820,6 +835,11 @@
                 <input id="saveTimelineButton" name="Save Timeline" type="submit" value="Save Timeline" class="actionButton" />
                 <!-- <div id="saveTimelineButton" class="actionButton" download="map.png">Save Timeline</div> -->
                 <!-- <a id="export-png" class="actionButton" download="map.png">Save Timeline</a> -->
+                <!--
+                <input id="saveImagesStartDate" style="display: none" name="startDate"class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
+                <input id="saveImagesEndDate" style="display: none" name="endDate"class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
+                -->
+
             </div>
 	</form>
         </div>

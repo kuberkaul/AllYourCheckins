@@ -137,6 +137,10 @@ def search(request):
     template = loader.get_template('mapTemplate.html')
 
 
+    # FIXME - This is to avoid weird crash we're getting
+    if 'startDate' not in request.GET:
+        return mapView(request)
+
 
     if 'username' in request.GET:
         username = request.GET['username']
@@ -159,7 +163,7 @@ def search(request):
 	message3 = message3.split('-')
 
 
-    if(('startDate' not in request.GET or request.GET['startDate'] == "") and ( 'endDate' in request.GET and request.GET['endDate'] != "")):
+    if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
         finalDate = int(finalDate)
 
@@ -176,7 +180,7 @@ def search(request):
 
 
 
-    elif (('endDate' not in request.GET or request.GET['endDate'] == "") and( 'startDate' in request.GET and  request.GET['startDate'] != "")):
+    elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
 	if 'userid' in request.GET:
@@ -193,7 +197,7 @@ def search(request):
 
 
     
-    elif (('endDate' not in request.GET or request.GET['endDate'] == "") and ('startDate' not in request.GET or request.GET['startDate'] == "")):
+    elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
 	if 'username' not in request.GET:
 		useranme = "Kuber Kaul"
 	if 'userid' in request.GET:
