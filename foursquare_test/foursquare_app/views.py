@@ -5,6 +5,7 @@ from django.template import Context, loader, RequestContext
 import foursquare, datetime
 from django.contrib.auth import logout
 
+#from django.core.context_processors import csrf
 #from sets import set
 import mimetypes
 from django.shortcuts import render_to_response
@@ -158,7 +159,7 @@ def search(request):
 	message3 = message3.split('-')
 
 
-    if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
+    if(('startDate' not in request.GET or request.GET['startDate'] == "") and ( 'endDate' in request.GET and request.GET['endDate'] != "")):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
         finalDate = int(finalDate)
 
@@ -170,12 +171,12 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
      			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	context =RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
 
 
-    elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
+    elif (('endDate' not in request.GET or request.GET['endDate'] == "") and( 'startDate' in request.GET and  request.GET['startDate'] != "")):
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
 	if 'userid' in request.GET:
@@ -186,13 +187,15 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
         		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         return HttpResponse(template.render(context))
 
 
 
     
-    elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
+    elif (('endDate' not in request.GET or request.GET['endDate'] == "") and ('startDate' not in request.GET or request.GET['startDate'] == "")):
+	if 'username' not in request.GET:
+		useranme = "Kuber Kaul"
 	if 'userid' in request.GET:
 		for i,key in enumerate(friends_checkins['recent']):
                         if friends_checkins['recent'][i]['user']['id']  == userid:
@@ -200,7 +203,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
- 	context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+ 	context = RequestContext(request, {"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
 	#print timeFilteredCheckinsBefore
     	return HttpResponse(template.render(context))
     
@@ -213,7 +216,7 @@ def search(request):
                 for i,key in enumerate(friends_checkins_timestamp['recent']):
                         if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
                                 timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-		context = RequestContext( request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+		context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         	return HttpResponse(template.render(context))
 	else:
     		startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
@@ -246,7 +249,7 @@ def search(request):
     #for i in putToMap:
 #	print i ,putToMap[i]
  #   print putToMap
-    context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
+    context = RequestContext(request,  {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
 
