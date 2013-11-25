@@ -29,7 +29,7 @@
                     preload: Infinity,
                     source: new ol.source.BingMaps({
                       key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
-                      style: styles[i]
+                      imagerySet: styles[i]
                     })
                   }));
                 }
@@ -59,15 +59,23 @@
                   })
                 }));
 
+
                 // FIXME - Don't keep map as a global
                 map = new ol.Map({
-                  layers: layers,
-                  //renderers: ol.RendererHints.createFromQueryData(),
 
+                  controls: ol.control.defaults().extend([
+                    new ol.control.ZoomToExtent({
+                      extent: [
+                        813079.7791264898, 5929220.284081122,
+                        848966.9639063801, 5936863.986909639
+                      ]
+                    })
+                  ]),
+
+                  layers: layers,
                   renderer: ol.RendererHint.CANVAS,
                   target: 'map',
                   view: new ol.View2D({
-                    //center: ol.proj.transform([-123.1, 49.25], 'EPSG:4326', 'EPSG:3857'),
                     center: ol.proj.transform([-73.976955, 40.768537], 'EPSG:4326', 'EPSG:3857'),
                     zoom:14 
                   })
@@ -77,6 +85,7 @@
                 $('#layer-select').change(function() {
                   var style = $(this).find(':selected').val();
                   for (var i = 0; i < layers.length; ++i) {
+
                     // FIXME - This is a hack to avoid messing with the checkin Layer and must be fixed
                     if(i !== 5) {
                     	layers[i].setVisible(styles[i] == style);
@@ -85,6 +94,10 @@
 
                 });
                 $('#layer-select').trigger('change');
+
+
+
+
 
 
 
@@ -111,11 +124,6 @@
                     var pngImageInBase64;
                     var pngImageInBase64 = map.getRenderer().getCanvas().toDataURL('image/png');
                     
-                    //window.alert("The map was converted to a png.  The saveTimeline function in mapTemplate.html needs to be changed to save it to the user's images.  It's base64 encoding is:\n" + pngImageInBase64);
-                    // TODO - Save this to the user's images
-		   //console.log(pngImageInBase64);
-		   // var encodedStr = encodeURIComponent(pngImageInBase64);
-		   // window.location = "/foursquare_app/mapView?imgString="+encodedStr;
 		    var form = document.getElementById("savingImages");
 		    var input = document.createElement("input");
 		    input.setAttribute("name","imageString");
@@ -128,12 +136,6 @@
 		    var inputEndDate = document.createElement("input");
 		    inputEndDate.setAttribute("name","endDate");
 		    inputEndDate.setAttribute("value","");
-
-            //document.getElementById('saveImagesStartDate').value = '';
-            //document.getElementById('saveImagesEndDate').value = '';
-		    //form.appendChild(input);
-		    //form.appendChild(inputStartDate);
-		    //form.appendChild(inputEndDate);
 		    
 		    console.log(pngImageInBase64);
 		    alert("The timeline will be saved now!");
@@ -183,26 +185,6 @@
                         }
                       }]
                     };
-
-                    //var attr = data.features[0].getAttributes();
-    
-                    /*
-                    var style = new ol.style.Style({
-                      symbolizers: [
-                        new ol.style.Shape({
-                          size: 12,
-                          fill: new ol.style.Fill({
-                            color: '#F3F315',
-                            opacity: 0.6
-                          }),
-                          stroke: new ol.style.Stroke({
-                            color: '#F3F315',
-                            opacity: 0.9
-                          })
-                        })
-                      ]
-                    });
-                    */
 
                     var vector = new ol.layer.Vector({
                       //style: style,
@@ -284,22 +266,25 @@
                       })
                     });
 
-                    /*
+
+                    var extents = [];
+
                     vector.on('featureadd', function(e) {
-                        map.getView().fitExtent(e.a[0], map.getSize());
-                        map.getLayers().getAt(0).setVisible(true);
+                      extents.push(e.extents ? e.extents[0] : e.a[0]);
                     });
-                    */
+
                     map.addLayer(vector);
 
+                    function zoomToFitExtent() {
+                        if(0 == extents.length) {
+                            setTimeout(zoomToFitExtent, 50);//wait 50 milliseconds then recheck
+                            return;
+                        }
+                        map.getView().fitExtent(extents[0], map.getSize());
+                    }
+
+                    zoomToFitExtent();
                 }
-
-
-
-
-
-
-
 
 
 		{%if mapCheckins %}
@@ -319,189 +304,6 @@
             });
           });
         </script>
-
-	<!--
-        <script type="text/javascript">
-            //document.onload = function() {
-
-                function saveTimeline() {
-                    var pngImageInBase64;
-                    var pngImageInBase64 = map.getRenderer().getCanvas().toDataURL('image/png');
-                    
-                    //window.alert("The map was converted to a png.  The saveTimeline function in mapTemplate.html needs to be changed to save it to the user's images.  It's base64 encoding is:\n" + pngImageInBase64);
-                    // TODO - Save this to the user's images
-		   //console.log(pngImageInBase64);
-		   // var encodedStr = encodeURIComponent(pngImageInBase64);
-		   // window.location = "/foursquare_app/mapView?imgString="+encodedStr;
-		    form = document.getElementById("savingImages");
-		    input = document.createElement("input");
-		    input.setAttribute("name","imageString");
-		    input.setAttribute("value",pngImageInBase64);
-		    input.setAttribute("startDate","");
-		    input.setAttribute("endDate","");
-		    form.appendChild(input);
-		    
-		    console.log(pngImageInBase64);
-		    alert("The timeline will be saved now!");
-		    form.submit();	
-                }
-
-                function createPoint(point) {
-                    return {    
-                            type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [point.longitude, point.latitude]
-                            }
-                    };
-                }
-
-                function createLine(point1, point2) {
-                    return {
-                        type: 'Feature',
-                        properties: {
-                          'color': '#F3F315',
-                          'where': 'inner'
-                        },
-                        geometry: {
-                          type: 'LineString',
-                          coordinates: [[point1.longitude, point1.latitude], [point2.longitude, point2.latitude]]
-                        }
-                    };
-                }
-
-                function addLine(point1, point2) {
-                    var data = {
-                      type: 'FeatureCollection',
-                      features: [{
-                        type: 'Feature',
-                        properties: {
-                          'color': '#F3F315',
-                          'where': 'inner'
-                        },
-                        geometry: {
-                          type: 'LineString',
-                          coordinates: [[point1.longitude, point1.latitude], [point2.longitude, point2.latitude]]
-                        }
-                      }]
-                    };
-
-                    //var attr = data.features[0].getAttributes();
-    
-                    //debugger;
-                    /*
-                    var style = new ol.style.Style({
-                      symbolizers: [
-                        new ol.style.Shape({
-                          size: 12,
-                          fill: new ol.style.Fill({
-                            color: '#F3F315',
-                            opacity: 0.6
-                          }),
-                          stroke: new ol.style.Stroke({
-                            color: '#F3F315',
-                            opacity: 0.9
-                          })
-                        })
-                      ]
-                    });
-                    */
-
-                    var vector = new ol.layer.Vector({
-                      //style: style,
-                      source: new ol.source.Vector({
-                        parser: new ol.parser.GeoJSON(),
-                        data: data
-                      })
-                    });
-
-                    map.addLayer(vector);
-
-
-                }
-
-                function fetchData() {
-
-                    // FIXME - Relying on the # of layers not changing and the last one always being the checkin layer.
-                    // Remove previous checkin layers if they exist
-                    var layerContainer = map.getLayers();
-                    while(layerContainer.getLength() > 6){
-                        layerContainer.pop();
-                    }
- 
-                    {% for name,location in mapCheckins.iteritems %}
-                    console.log("{{name}}"+"{{location.0}}"+"{{location.1}}");
-                    {% endfor %}
-
-
-                    var features = [];
-                    var point;
-                    {% for name,location in mapCheckins.iteritems %}
-                    point = { "latitude": {{location.0}}, "longitude": {{location.1}} };
-                    features.push(createPoint(point));
-                    {% endfor %}
-
-                    //var point1 = { "latitude": 40.768537, "longitude": -73.976955 };
-                    //var point2 = { "latitude": 40.754127, "longitude": -73.981676 };
-                    //var point3 = { "latitude": 40.755557, "longitude": -73.997297 };
-
-                    //features.push(createPoint(point1));
-                    //features.push(createPoint(point2));
-                    //features.push(createPoint(point3));
-
-                    // TODO - So far I've been unable to get lines to show up on the map all on the same layer.  For now use the addLine function which creates a new layer for every line.
-                    //features.push(createLine(point1, point2));
-                    //features.push(createLine(point2, point3));
-
-                    //addLine(point1, point2);
-                    //addLine(point2, point3);
-
-                    var data = {
-                      type: 'FeatureCollection',
-                      features: features
-                    };
-
-                    var style = new ol.style.Style({
-                      symbolizers: [
-                        new ol.style.Shape({
-                          size: 20,
-                          fill: new ol.style.Fill({
-                            color: '#F3F315',
-                            opacity: 0.6
-                          }),
-                          stroke: new ol.style.Stroke({
-                            color: '#F3F315',
-                            opacity: 0.2
-                          })
-                        })
-                      ]
-                    });
-
-                    var vector = new ol.layer.Vector({
-                      style: style, 
-                      source: new ol.source.Vector({
-                        parser: new ol.parser.GeoJSON(),
-                        data: data
-                      })
-                    });
-
-                    vector.on('featureadd', function(e) {
-                        map.getView().fitExtent(e.a[0], map.getSize());
-                        map.getLayers().getAt(0).setVisible(true);
-                    });
-
-                    map.addLayer(vector);
-
-
-                //$.get('search/', function(data){alert("Reaching to Foursquare....")});
-                //{
-                //document.getElementById("something").submit();
-                //}
-                //window.alert("Parameters Submitted");
-                }
-            //}
-        </script>
-	-->
 
 
         <link href="http://fonts.googleapis.com/css?family=Lobster" rel="stylesheet" type="text/css">
@@ -795,7 +597,8 @@
             <div id="rightColumn" class="boxWrap">
                 <!-- <div id="mapWrapper"></div> -->
                 <div id="map"></div>
-                <a id="export-png" class="btn" download="map.png"><i class="icon-download"></i> Export PNG</a>
+                <a id="export-png" class="btn" download="map.png"><i class="icon-download"></i> Export PNG</a>   
+    
                 <select id="layer-select">
                     <option value="Aerial">Aerial</option>
                     <option value="AerialWithLabels" selected>Aerial with labels</option>
