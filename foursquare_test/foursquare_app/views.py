@@ -80,6 +80,7 @@ def imageIndex(request):
 
     	template = loader.get_template('imageIndexTemplate.html')
     	context = RequestContext(request,{"imageList": imageList,"Name":name})
+	print "reached end of imageindex"
     	return HttpResponse(template.render(context))
     except:
 	template = loader.get_template('imageIndexTemplate.html')
@@ -114,6 +115,10 @@ def friendIndex(request):
     return HttpResponse(template.render(context))
 
 def search(request):
+    # FIXME - This is to avoid weird crash we're getting
+    if 'startDate' not in request.GET:
+        return mapView(request)
+
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -128,7 +133,6 @@ def search(request):
     template = loader.get_template('mapTemplate.html')
 
 
-    # FIXME - This is to avoid weird crash we're getting
     if 'startDate' not in request.GET:
         return mapView(request)
     if 'username' in request.GET:

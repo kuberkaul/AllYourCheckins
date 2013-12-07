@@ -83,8 +83,8 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-ACCESS_KEY = 
-SECRET_ACCESS_KEY = 
+ACCESS_KEY = 'AKIAJS32PSCOVR5ZBZKA'
+SECRET_ACCESS_KEY = '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'
 SECRET_KEY = '4+4n@$)9tz&rol)y)*0v308@9azv9lj26h85-c#)ix(p9q84dc'
 
 # List of callables that know how to import templates from various sources.
