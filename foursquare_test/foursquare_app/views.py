@@ -30,7 +30,10 @@ def mapView(request):
     code = request.GET.get('code','')
     friendid = request.GET.get('userid','')
     friendname = request.GET.get('firstName','')
-    print "friend id is:"+friendid+" friend name is:"+friendname
+    #if friendid:
+    #	print "friend id is: "+friendid+", friend name is: "+friendname
+    #else:
+    #	print "Current user is being accessed"
     # Using access token and creating client object
     accessToken = request.session.get('accessToken')
     if not accessToken:
@@ -116,8 +119,8 @@ def friendIndex(request):
 
 def search(request):
     # FIXME - This is to avoid weird crash we're getting
-    if 'startDate' not in request.GET:
-        return mapView(request)
+    #if 'startDate' not in request.GET:
+    #    return mapView(request)
 
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
@@ -132,15 +135,20 @@ def search(request):
     timeFilteredCheckinsAfter.clear()
     template = loader.get_template('mapTemplate.html')
 
-
+    
     if 'startDate' not in request.GET:
-        return mapView(request)
+        startDate = ""
     if 'username' in request.GET:
         username = request.GET['username']
+	print "username is : " + username
+    else:
+	print "current user"
     if 'userid' in request.GET:
  	userid = request.GET['userid']
-	print username+"is the user and userid is"+userid
+	print "userid is : " + userid
 	friends_checkins = client.checkins.recent()
+    else:
+	print "current userid"
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
@@ -154,7 +162,6 @@ def search(request):
     if 'endDate' in request.GET:
 	message3 = request.GET['endDate']
 	message3 = message3.split('-')
-
 
     if (request.GET['startDate'] == "" and request.GET['endDate'] != ""):
         finalDate = (datetime.datetime(int(message3[0]),int(message3[1]),int(message3[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
