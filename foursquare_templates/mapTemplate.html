@@ -107,7 +107,6 @@
             //document.onload = function() {
 
                 function saveTimeline() {
-                    debugger;
                     var pngImageInBase64;
                     var pngImageInBase64 = map.getRenderer().getCanvas().toDataURL('image/png');
                     
@@ -270,8 +269,7 @@
                           }),
                           stroke: new ol.style.Stroke({
                             color: '#F3F315',
-                            opacity: 0.2
-                          })
+                            opacity: 0.2                            })
                         })
                       ]
                     });
@@ -303,7 +301,7 @@
 
 
 		{%if mapCheckins %}
-		fetchData();	
+            fetchData();	
 		{% endif %}
             }
         </script>
@@ -831,8 +829,8 @@
                     </div>
 
                 </div>
-	<form action = "imageIndex/" method="post" id="savingImages">{% csrf_token %}
-                <input id="saveTimelineButton" name="Save Timeline" type="submit" value="Save Timeline" class="actionButton" />
+	<form action = "mapView/" method="post" id="savingImages">{% csrf_token %}
+                <input id="saveTimelineButton" name="Save Timeline" type="submit" onclick = "saveTimeline();" value="Save Timeline" class="actionButton" />
                 <!-- <div id="saveTimelineButton" class="actionButton" download="map.png">Save Timeline</div> -->
                 <!-- <a id="export-png" class="actionButton" download="map.png">Save Timeline</a> -->
                 <!--

@@ -4,9 +4,6 @@ from django.shortcuts import redirect,render_to_response
 from django.template import Context, loader, RequestContext
 import foursquare, datetime
 from django.contrib.auth import logout
-
-#from django.core.context_processors import csrf
-#from sets import set
 import mimetypes
 from django.shortcuts import render_to_response
 from django import forms
@@ -42,15 +39,13 @@ def mapView(request):
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
     currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
-
+    print "hello from mapView"
     if friendid:
         name = friendname
         id = friendid
     else:
         name= currentUser 
         id = '' 
-    #print name
-
     imageString = request.POST.get('imageString','')
 
     if imageString:
@@ -59,15 +54,15 @@ def mapView(request):
     	k = Key(b)
     	k.key = client.users()['user']['id']+"_"+unicode(datetime.datetime.now()) 
     	k.set_contents_from_string(imageString)
-
-
+    	print imageString
+    else:
+	"Error no string"
     template = loader.get_template('mapTemplate.html')
     context = RequestContext(request,{"CurrentUser":currentUser,"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
 def imageIndex(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
-    # TODO - I'd like to call a function here that returns all of the signed-in user's saved timeline images.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
     currentId = client.users()['user']['id']
@@ -93,13 +88,10 @@ def imageIndex(request):
 
 def friendIndex(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
-    # TODO - I'd like to call a function here that returns all of the signed-in user's friends.
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
 
     friends = []
-    #print 'All friends of user are :'
-    #print client.users.friends()
     for i,key in enumerate(client.users.friends()['friends']['items']):
 	if 'photo' not in key:
 		photo = " "
@@ -116,7 +108,6 @@ def friendIndex(request):
 	else:
 		lastName = key['lastName']
         friends.append([key['id'],key['firstName'],lastName,photo,homeCity])
-        #print i,key['firstName'] 
 
     template = loader.get_template('friendIndexTemplate.html')
     context = RequestContext(request,{"usernameList": friends,"Name":name})
@@ -140,8 +131,6 @@ def search(request):
     # FIXME - This is to avoid weird crash we're getting
     if 'startDate' not in request.GET:
         return mapView(request)
-
-
     if 'username' in request.GET:
         username = request.GET['username']
     if 'userid' in request.GET:
@@ -175,7 +164,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
      			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
-	context =RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
+	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
 
@@ -207,8 +196,7 @@ def search(request):
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
                         timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
- 	context = RequestContext(request, {"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
-	#print timeFilteredCheckinsBefore
+ 	context = RequestContext( request, {"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
     
 
@@ -245,15 +233,10 @@ def search(request):
     intersectionNames = set(commonSet)
     for something in intersectionNames:
         if something in timeFilteredCheckinsBefore.keys():
-        	#print something , timeFilteredCheckinsBefore[something]
 		putToMap[something] = timeFilteredCheckinsBefore[something]
 	else:
 		putToMap[something] = timeFilteredCheckinsBefore[something]
-		#print something, timeFilteredCheckinsAfter[something]
-    #for i in putToMap:
-#	print i ,putToMap[i]
- #   print putToMap
-    context = RequestContext(request,  {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
+    context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
 
