@@ -1,42 +1,46 @@
 # Create your views here.
+
+#importing dependencies for the project
 from django.http import HttpResponse
 from django.shortcuts import redirect,render_to_response
 from django.template import Context, loader, RequestContext
-import foursquare, datetime
 from django.contrib.auth import logout
-import mimetypes
 from django.shortcuts import render_to_response
 from django import forms
 from django.conf import settings
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from foursquare_app.models import savedTimelines
-import base64
-import datetime
+import base64, datetime, mimetypes, foursquare 
 
-# Authenticating the user here
+# Authenticating the user here using oauth2
 def index(request):
 	try:
 		del request.session['accessToken']
 	except KeyError:
 		pass
 	client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
-	
 	auth_uri = client.oauth.auth_url()
 	return redirect(auth_uri)
 
+# Saving the image(base64 string) on AWS-S3 here with key as firstname, lastname
 def mapView(request):
+    # Checking for authentication again
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     code = request.GET.get('code','')
     friendid = request.GET.get('userid','')
     friendname = request.GET.get('firstName','')
     accessToken = request.session.get('accessToken')
+
+    # Checking for access token for further authentication
     if not accessToken:
 	accessToken = client.oauth.get_token(code)
 	request.session['accessToken'] = accessToken
+
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
     currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
+
     if friendid:
         name = friendname
         id = friendid
@@ -44,7 +48,8 @@ def mapView(request):
         name= currentUser 
         id = '' 
     imageString = request.POST.get('imageString','')
-
+    
+    # Saving the image to S3 here using BOTO
     if imageString:
     	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
     	b = conn.create_bucket("allyourcheckinsimages"+client.users()['user']['id'])
@@ -53,18 +58,21 @@ def mapView(request):
     	k.set_contents_from_string(imageString)
     else:
 	"Error no string"
+
     template = loader.get_template('mapTemplate.html')
     context = RequestContext(request,{"CurrentUser":currentUser,"Name":name,"Id":id})
     return HttpResponse(template.render(context))
 
+# Displaying all the images in the image index tab from AWS-S3 for download.
 def imageIndex(request):
+    # Checking for authentication of the user
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     name=client.users()['user']['firstName']+" "+client.users()['user']['lastName']
-    currentId = client.users()['user']['id']
-
+    currentId = client.users()['user']['id']   
     imageList = []
-
+    
+    # Connecting to S3 using BOTO
     try:
     	conn = S3Connection(settings.ACCESS_KEY, settings.SECRET_ACCESS_KEY)
     	b = conn.get_bucket("allyourcheckinsimages"+client.users()['user']['id'])
@@ -73,7 +81,6 @@ def imageIndex(request):
 		if l[0]==client.users()['user']['id']:
     	    		src=k.get_contents_as_string()
 	    		imageList.append({"src": src,"title": "First Timeline"})
-
     	template = loader.get_template('imageIndexTemplate.html')
     	context = RequestContext(request,{"imageList": imageList,"Name":name})
 	print "reached end of imageindex"
@@ -83,6 +90,7 @@ def imageIndex(request):
         context = RequestContext(request,{"imageList": imageList,"Name":name})
         return HttpResponse(template.render(context))
 
+# Displaying all friends of the user in the friends tab
 def friendIndex(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
@@ -110,8 +118,9 @@ def friendIndex(request):
     context = RequestContext(request,{"usernameList": friends,"Name":name})
     return HttpResponse(template.render(context))
 
+# The main function of the backend, which processes the inputs from the frontend and then processes that as parameter for the Foursquare API using M-Lewis library and then sends the xml data back to the front end for display.
 def search(request):
-
+    # Checking authentication for the user again 
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
     client.set_access_token(request.session.get('accessToken'))
     currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
@@ -128,17 +137,20 @@ def search(request):
     
     if 'startDate' not in request.GET:
         startDate = ""
+
     if 'username' in request.GET:
         username = request.GET['username']
 	print "username is : " + username
     else:
 	print "current user"
+
     if 'userid' in request.GET:
  	userid = request.GET['userid']
 	print "userid is : " + userid
 	friends_checkins = client.checkins.recent()
     else:
 	print "current userid"
+
     if 'query' in request.GET:
         message1 = request.GET['query']
     if 'startDate' in request.GET:
@@ -171,6 +183,7 @@ def search(request):
 
 
     elif (request.GET['endDate'] == "" and request.GET['startDate'] != ""):
+	#Checking for input conditions where end date is blank
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
 	startDate = int(startDate)
 	if 'userid' in request.GET:
@@ -188,6 +201,7 @@ def search(request):
 
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
+	#Checking for input conditions where both the dates are blank
 	if 'username' not in request.GET:
 		useranme = "Kuber Kaul"
 	if 'userid' in request.GET:
@@ -203,6 +217,7 @@ def search(request):
 
 
     else:
+	# Processing inputs as parameters
 	startDate = (datetime.datetime(int(message2[0]),int(message2[1]),int(message2[2]),0,0) - datetime.datetime(1970,1,1)).total_seconds()
         startDate = int(startDate)
         if 'userid' in request.GET:
@@ -226,7 +241,7 @@ def search(request):
                         timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
                         venueNamesAfter.append(key['venue']['name'])
 
-
+    #Collecting common chekins
     for before in venueNamesBefore:
 	for after in venueNamesAfter:
             if(before == after):
@@ -240,7 +255,7 @@ def search(request):
     context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": putToMap})
     return HttpResponse(template.render(context))
 
-
+# Logging in to the application
 def login(request):
     if request.session['accessToken']:
         del request.session['accessToken']
@@ -248,6 +263,7 @@ def login(request):
     context = RequestContext()
     return HttpResponse(template.render(context))
 
+# Logging out of application
 def logoutuser(request):
     try:
         del request.session['accessToken']
