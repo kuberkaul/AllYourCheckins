@@ -122,23 +122,16 @@
                 function saveTimeline() {
                     var pngImageInBase64;
                     var pngImageInBase64 = map.getRenderer().getCanvas().toDataURL('image/png');
-                    
-		    var form = document.getElementById("savingImages");
+   
+            var form = document.getElementById("savingImages");
 		    var input = document.createElement("input");
 		    input.setAttribute("name","imageString");
 		    input.setAttribute("value",pngImageInBase64);
-
-		    var inputStartDate = document.createElement("input");
-		    inputStartDate.setAttribute("name","startDate");
-		    inputStartDate.setAttribute("value","");
-
-		    var inputEndDate = document.createElement("input");
-		    inputEndDate.setAttribute("name","endDate");
-		    inputEndDate.setAttribute("value","");
+		    form.appendChild(input);
 		    
 		    console.log(pngImageInBase64);
 		    alert("The timeline will be saved now!");
-		    form.submit();	
+		    form.submit();
                 }
 
                 $('#saveTimelineButton').click(function(){
@@ -634,16 +627,10 @@
                     </div>
 
                 </div>
-	<form action = "mapView/" method="post" id="savingImages">{% csrf_token %}
+	<form action = "/foursquare_app/mapView" method="post" id="savingImages">{% csrf_token %}
+                <div>
                 <input id="saveTimelineButton" name="Save Timeline" type="submit" onclick = "saveTimeline();" value="Save Timeline" class="actionButton" />
-                <!-- <div id="saveTimelineButton" class="actionButton" download="map.png">Save Timeline</div> -->
-                <!-- <a id="export-png" class="actionButton" download="map.png">Save Timeline</a> -->
-                <!--
-                <input id="saveImagesStartDate" style="display: none" name="startDate"class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
-                <input id="saveImagesEndDate" style="display: none" name="endDate"class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
-                -->
-
-            </div>
+                </div>
 	</form>
         </div>
     </body>
