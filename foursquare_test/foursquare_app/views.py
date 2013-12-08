@@ -27,7 +27,6 @@ def index(request):
 
 def mapView(request):
     client = foursquare.Foursquare(client_id='AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR', client_secret='4TISHB1NWZUHLBRPXDT0ULL0EUBEREKRVHGR1QPZKTM3ILKP', redirect_uri='http://localhost:8000/foursquare_app/mapView')
-    print "hello from mapview"
     code = request.GET.get('code','')
     friendid = request.GET.get('userid','')
     friendname = request.GET.get('firstName','')
@@ -38,7 +37,6 @@ def mapView(request):
     client.set_access_token(accessToken)
     client.set_access_token(request.session.get('accessToken'))
     currentUser = client.users()['user']['firstName']+" "+client.users()['user']['lastName']
-    print "hello from mapView"
     if friendid:
         name = friendname
         id = friendid
@@ -53,7 +51,6 @@ def mapView(request):
     	k = Key(b)
     	k.key = client.users()['user']['id']+"_"+unicode(datetime.datetime.now()) 
     	k.set_contents_from_string(imageString)
-    	print imageString
     else:
 	"Error no string"
     template = loader.get_template('mapTemplate.html')
