@@ -171,7 +171,8 @@ def search(request):
 
      	if 'userid' in request.GET:
 	   	for i,key in enumerate(friends_checkins['recent']):  
-			if friends_checkins['recent'][i]['user']['id']  == userid:			      			      	    timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+			if friends_checkins['recent'][i]['user']['id']  == userid:		
+	      			      	    timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
 	 		else:
 				pass
 	else:
@@ -188,7 +189,8 @@ def search(request):
 	startDate = int(startDate)
 	if 'userid' in request.GET:
 		for i,key in enumerate(friends_checkins_timestamp['recent']):	
-			if friends_checkins_timestamp['recent'][i]['user']['id']  == userid:                         		      timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']	
+			if friends_checkins_timestamp['recent'][i]['user']['id']  == userid:                         		 
+				timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']	
 			else:
 				pass	
 	else:
@@ -271,6 +273,7 @@ def logoutuser(request):
         pass
     return redirect("https://foursquare.com/oauth2/authorize?client_id=AWIKUN01EPJQ3BOCDC4HJPJ1LE52JAW03DJ0M5PWT5SO1ZCR&response_type=code&redirect_uri=http://localhost:8000/foursquare_app/mapView")
 
+# Logging error method
 def loginError(request):
     template = loader.get_template('login.html')
     context = RequestContext(request,{"errorMessage": "The username or password you entered is incorrect"})
