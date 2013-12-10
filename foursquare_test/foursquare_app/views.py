@@ -83,7 +83,6 @@ def imageIndex(request):
 	    		imageList.append({"src": src,"title": "First Timeline"})
     	template = loader.get_template('imageIndexTemplate.html')
     	context = RequestContext(request,{"imageList": imageList,"Name":name})
-	print "reached end of imageindex"
     	return HttpResponse(template.render(context))
     except:
 	template = loader.get_template('imageIndexTemplate.html')
@@ -142,14 +141,14 @@ def search(request):
         username = request.GET['username']
 	print "username is : " + username
     else:
-	print "current user"
+	print "username is : current user"
 
     if 'userid' in request.GET:
  	userid = request.GET['userid']
 	print "userid is : " + userid
 	friends_checkins = client.checkins.recent()
     else:
-	print "current userid"
+	print "userid is : current userid"
 
     if 'query' in request.GET:
         message1 = request.GET['query']
@@ -172,12 +171,12 @@ def search(request):
      	if 'userid' in request.GET:
 	   	for i,key in enumerate(friends_checkins['recent']):  
 			if friends_checkins['recent'][i]['user']['id']  == userid:		
-	      			      	    timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+	      			      	    timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
 	 		else:
 				pass
 	else:
 		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
-     			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+     			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
 	context = RequestContext(request,{"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
 
@@ -189,13 +188,13 @@ def search(request):
 	startDate = int(startDate)
 	if 'userid' in request.GET:
 		for i,key in enumerate(friends_checkins_timestamp['recent']):	
-			if friends_checkins_timestamp['recent'][i]['user']['id']  == userid:                         		 
-				timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']	
+			if friends_checkins_timestamp['recent'][i]['user']['id']  == userid:         
+				timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']	
 			else:
 				pass	
 	else:
 		for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
-        		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+        		timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
 	context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         return HttpResponse(template.render(context))
 
@@ -203,16 +202,14 @@ def search(request):
 
     
     elif (request.GET['endDate'] == "" and request.GET['startDate'] == ""):
-	#Checking for input conditions where both the dates are blank
-	if 'username' not in request.GET:
-		useranme = "Kuber Kaul"
+	#Checking for input conditions where both the dates are blank		
 	if 'userid' in request.GET:
 		for i,key in enumerate(friends_checkins['recent']):
                         if friends_checkins['recent'][i]['user']['id']  == userid:
-                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
 	else:
 		for i,key in enumerate(client.users.checkins()['checkins']['items']):
-                        timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+                        timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
  	context = RequestContext( request, {"CurrentUser":currentUser,"mapCheckins": timeFilteredCheckinsBefore})
     	return HttpResponse(template.render(context))
     
@@ -225,7 +222,7 @@ def search(request):
         if 'userid' in request.GET:
                 for i,key in enumerate(friends_checkins_timestamp['recent']):
                         if client.checkins.recent(params={'afterTimestamp':startDate})['recent'][i]['user']['id']  == userid:
-                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+                                timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
 		context = RequestContext(request, {"CurrentUser":currentUser,"Name":username,"mapCheckins": timeFilteredCheckinsBefore})
         	return HttpResponse(template.render(context))
 	else:
@@ -235,12 +232,12 @@ def search(request):
     		finalDate = int(finalDate)
 
     		for i,key in enumerate(client.users.checkins(params={'beforeTimestamp':finalDate})['checkins']['items']):
-			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+			timeFilteredCheckinsBefore[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
         		venueNamesBefore.append(key['venue']['name'])
 
 		
                 for i,key in enumerate(client.users.checkins(params={'afterTimestamp':startDate})['checkins']['items']):
-                        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng']
+                        timeFilteredCheckinsAfter[key['venue']['name']] = key['venue']['location']['lat'] , key['venue']['location']['lng'], key['createdAt'], key['timeZoneOffset']
                         venueNamesAfter.append(key['venue']['name'])
 
     #Collecting common chekins
