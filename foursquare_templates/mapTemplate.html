@@ -200,21 +200,60 @@
                         layerContainer.pop();
                     }
  
+                    // This extracts checkin data from the backend and adds it to the checkins array
+                    var checkins = [];
+                    {% for name,location in mapCheckins.iteritems %}
+                       checkins.push({ "name": "{{name}}", "latitude": {{location.0}}, "longitude": {{location.1}}, "createdAt": {{location.2}}, "timezoneOffset": {{location.3}} });
+                    {% endfor %}
+
+                    
+                    // Users can decide whether to sort based on absolute time or by time of day
+                    if(confirm("Would you like to sort the check-ins by time of day only?")) {
+                        checkins.sort(function(a,b){
+
+                            var aDate = new Date(a.createdAt + a.timezoneOffset);
+                            var bDate = new Date(b.createdAt + b.timezoneOffset);
+                            console.log("returning " + aDate.getHours() + " - " + bDate.getHours());
+                            if(aDate.getHours() !== bDate.getHours()){
+                                console.log("returning " + aDate.getHours() + " - " + bDate.getHours());
+                                return aDate.getHours() - bDate.getHours();
+                            }
+
+                            console.log("returning " + aDate.getMinutes() + " - " + bDate.getMinutes());
+                            if(aDate.getMinutes() !== bDate.getMinutes()){
+                                return aDate.getMinutes() - bDate.getMinutes();
+                            }
+
+                            console.log("returning " + aDate.getSeconds() + " - " + bDate.getSeconds());
+                            return aDate.getSeconds() - bDate.getSeconds();
+                        });
+ 
+
+                    } else {
+                        checkins.sort(function(a,b){
+                            var aTime = a.createdAt + a.timezoneOffset;
+                            var bTime = b.createdAt + b.timezoneOffset;
+                            var retval = aTime - bTime;
+                            return retval;
+                        });
+                    }
+                    console.log(checkins);
+
+
                     var features = [];
                     var lastPoint;
                     var currentPoint;
 
                     // This loop adds each line as its own layer to the map and collects all the points 
                     // in the features array to be added later as a single layer.
-                    {% for name,location in mapCheckins.iteritems %}
-                        console.log("{{name}}:"+"({{location.0}}, "+"{{location.1}})");
-                        currentPoint = { "latitude": {{location.0}}, "longitude": {{location.1}} };
+                    for(var i = 0; i < checkins.length; i++) {
+                        currentPoint = { "latitude": checkins[i].latitude, "longitude": checkins[i].longitude };
                         features.push(createPoint(currentPoint));
                         if(typeof lastPoint !== 'undefined'){
                             addLine(lastPoint, currentPoint);
                         };
                         lastPoint = currentPoint;
-                    {% endfor %}
+                    }
 
                     // Must check that some results were actually returned before trying to process them
                     if(0 === features.length) {
@@ -329,10 +368,12 @@
                         <input id="endDate" name="endDate" class="mapInput" type="date" placeholder = "Enter in yyyy-mm-dd format">
                     </div>
 
+                    <!--
                     <div class="mapInputWrapper">
                         Sort Check-Ins by Time Only:
                         <input id="sortByTimeOnlyBox" type="checkbox">
                     </div>
+                    -->
 
                     <input type="submit" class="actionButton" value="Fetch Data">
                 </form>
