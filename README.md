@@ -1,4 +1,4 @@
-*AllYourCheckins*
+**AllYourCheckins**
 
 Our project will be an application that allows users to generate timelines of their FourSquare check-ins. While there are a handful of preexisting applications that can produce FourSquare timelines, we intend to differentiate ourselves by providing our users with the ability to specify both what data is used to generate a timeline and how that data is represented. 
 
